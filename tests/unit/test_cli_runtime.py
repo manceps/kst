@@ -406,3 +406,56 @@ def test_main_returns_generic_on_unhandled_error(monkeypatch):
     monkeypatch.setattr(parser, "parse_args", _parse)
     rc = main(["list-runs"])  # any subcommand will do
     assert rc == EXIT_GENERIC
+
+
+# ─── plugin auto-registration on main() entry ──────────────────────────
+
+
+def test_main_registers_bundled_plugins_on_entry(tmp_path, monkeypatch):
+    """A fresh process invoking ``kst run ...`` must find every bundled
+    sub-test plugin already registered; otherwise the runner raises
+    ``ConfigError: sub-test plugin not registered`` when the config
+    references e.g. KMR_ADV.
+    """
+    from kst import list_plugins
+
+    # Start from an empty registry (autouse fixture already clears it).
+    assert list_plugins() == []
+
+    cfg_path = tmp_path / "tests.yaml"
+    # Reference a real bundled construct; if main() does not invoke
+    # register_all() this will surface as EXIT_CONFIG with
+    # "sub-test plugin not registered".
+    cfg_path.write_text(
+        "aggregation_mode: arithmetic\n"
+        "n_bootstrap: 20\n"
+        "sub_tests:\n"
+        "  - construct_id: KMR-Adv\n"
+    )
+
+    import kst.cli as cli_mod
+
+    monkeypatch.setattr(
+        cli_mod, "build_adapter",
+        lambda tgt, *, auth_bearer_token=None: _EchoAdapter(),
+    )
+
+    # We don't care whether the run succeeds (the echo adapter won't
+    # produce a parseable KMR-Adv response); we only care that
+    # registration happened before the runner inspected the registry.
+    main(
+        [
+            "run",
+            "--target",
+            "caici_local",
+            "--tests-config",
+            str(cfg_path),
+            "--no-db",
+        ]
+    )
+    registered = list_plugins()
+    assert "KMR-Adv" in registered
+    assert "HRO" in registered
+    assert "ROT-5" in registered
+    assert "BWD" in registered
+    assert "APE-A" in registered
