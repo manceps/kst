@@ -402,7 +402,9 @@ class APEAPlugin:
 
     # ── Prompt construction ───────────────────────────────────────────
 
-    def build_prompts(self, seed: int) -> Iterable[Item]:
+    def build_prompts(
+        self, seed: int, *, n_items_cap: Optional[int] = None
+    ) -> Iterable[Item]:
         rng = deterministic_rng(seed, salt="ape_a_items")
         items: List[Item] = []
 
@@ -485,6 +487,8 @@ class APEAPlugin:
                 )
             )
 
+        if n_items_cap is not None and n_items_cap >= 0:
+            items = items[:n_items_cap]
         return items
 
     # ── Response parsing ──────────────────────────────────────────────

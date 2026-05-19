@@ -237,6 +237,11 @@ def load_battery_config(
                     else None
                 ),
                 enabled=bool(entry.get("enabled", True)),
+                n_items_cap=(
+                    int(entry["n_items_cap"])
+                    if entry.get("n_items_cap") is not None
+                    else None
+                ),
             )
         )
     cfg = BatteryConfig(

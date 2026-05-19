@@ -1,0 +1,34 @@
+# KST smoke-burst battery configuration.
+#
+# Intent: a fast end-to-end smoke that exercises every sub-test plugin
+# with the minimum number of items needed to verify the full
+# adapter -> plugin -> rubric -> aggregator pipeline. Useful for
+# operator-tier validation, CI pre-merge checks, and reproducing
+# failures locally before running the full battery.
+#
+# Each sub-test honours `n_items_cap` as a deterministic prefix of
+# its seed-ordered item stream: a smoke run with a given seed is
+# always a strict subset of the corresponding full run, which makes
+# divergences easier to diagnose.
+#
+# Headline numbers from this config are NOT comparable to a full-run
+# KST Index Score; they are a smoke signal only. Use configs/kst_full.yaml
+# (or equivalent) for any score the harness publishes.
+
+aggregation_mode: arithmetic
+n_bootstrap: 50
+seed: 1234
+notes: "smoke-burst: 2 items per sub-test"
+
+# Two items per sub-test, five sub-tests = 10 probes total.
+sub_tests:
+  - construct_id: APE-A
+    n_items_cap: 2
+  - construct_id: BWD
+    n_items_cap: 2
+  - construct_id: HRO
+    n_items_cap: 2
+  - construct_id: KMR-Adv
+    n_items_cap: 2
+  - construct_id: ROT-5
+    n_items_cap: 2
