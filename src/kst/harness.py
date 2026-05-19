@@ -120,6 +120,14 @@ class BatteryConfig:
     the adapter's capabilities at start-time. Any inconsistency
     (missing plugin, adapter capability mismatch, weights not summing
     to 1.0) raises :class:`ConfigError` before any prompt is dispatched.
+
+    The ``adapter_timeout_s``, ``adapter_max_attempts``, and
+    ``adapter_rpm`` knobs are operator-configurable per-target adapter
+    settings surfaced through ``--tests-config`` so a battery can raise
+    its adapter timeout above a high-latency target's per-call p95
+    without code changes. The defaults match the
+    :class:`kst.adapters.base.BaseAdapter` defaults so omitting them
+    preserves v1.0.0 behaviour exactly.
     """
 
     target: str
@@ -132,6 +140,11 @@ class BatteryConfig:
     n_bootstrap: int = 1000
     seed: int = 1234
     notes: str = ""
+    # Operator-configurable adapter knobs. ``None`` means "fall back to
+    # the adapter's own default", which preserves v1.0.0 semantics.
+    adapter_timeout_s: Optional[float] = None
+    adapter_max_attempts: Optional[int] = None
+    adapter_rpm: Optional[int] = None
 
     def weights_map(self) -> Dict[str, float]:
         m: Dict[str, float] = {}

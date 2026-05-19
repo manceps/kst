@@ -140,7 +140,7 @@ def test_cmd_run_with_no_db_emits_md_and_returns_ok(tmp_path, monkeypatch, capsy
     # Force the CLI to use our EchoAdapter via build_adapter override.
     import kst.cli as cli_mod
 
-    monkeypatch.setattr(cli_mod, "build_adapter", lambda tgt, *, auth_bearer_token=None: _EchoAdapter())
+    monkeypatch.setattr(cli_mod, "build_adapter", lambda tgt, **kw: _EchoAdapter())
 
     jsonl_path = tmp_path / "out.jsonl"
     md_path = tmp_path / "out.md"
@@ -194,7 +194,7 @@ def test_cmd_run_incomplete_battery_returns_exit_incomplete(tmp_path, monkeypatc
 
     import kst.cli as cli_mod
 
-    monkeypatch.setattr(cli_mod, "build_adapter", lambda tgt, *, auth_bearer_token=None: _EchoAdapter())
+    monkeypatch.setattr(cli_mod, "build_adapter", lambda tgt, **kw: _EchoAdapter())
 
     parser = build_parser()
     args = parser.parse_args(
@@ -362,7 +362,7 @@ def test_main_routes_to_handler(tmp_path, monkeypatch):
 
     import kst.cli as cli_mod
 
-    monkeypatch.setattr(cli_mod, "build_adapter", lambda tgt, *, auth_bearer_token=None: _EchoAdapter())
+    monkeypatch.setattr(cli_mod, "build_adapter", lambda tgt, **kw: _EchoAdapter())
 
     rc = main(
         [
@@ -437,7 +437,7 @@ def test_main_registers_bundled_plugins_on_entry(tmp_path, monkeypatch):
 
     monkeypatch.setattr(
         cli_mod, "build_adapter",
-        lambda tgt, *, auth_bearer_token=None: _EchoAdapter(),
+        lambda tgt, **kw: _EchoAdapter(),
     )
 
     # We don't care whether the run succeeds (the echo adapter won't
@@ -459,3 +459,66 @@ def test_main_registers_bundled_plugins_on_entry(tmp_path, monkeypatch):
     assert "ROT-5" in registered
     assert "BWD" in registered
     assert "APE-A" in registered
+
+
+# ─── adapter knob plumbing (timeout_s / max_attempts / rpm) ────────────
+
+
+def test_load_battery_config_parses_adapter_knobs(tmp_path):
+    from kst.cli import load_battery_config
+
+    cfg_path = tmp_path / "tests.yaml"
+    cfg_path.write_text(
+        "aggregation_mode: arithmetic\n"
+        "adapter_timeout_s: 180.0\n"
+        "adapter_max_attempts: 8\n"
+        "adapter_rpm: 12\n"
+        "sub_tests:\n"
+        "  - construct_id: A\n"
+    )
+    cfg = load_battery_config("caici_local", str(cfg_path))
+    assert cfg.adapter_timeout_s == 180.0
+    assert cfg.adapter_max_attempts == 8
+    assert cfg.adapter_rpm == 12
+
+
+def test_load_battery_config_adapter_knobs_default_to_none(tmp_path):
+    from kst.cli import load_battery_config
+
+    cfg_path = tmp_path / "tests.yaml"
+    cfg_path.write_text(
+        "aggregation_mode: arithmetic\n"
+        "sub_tests:\n"
+        "  - construct_id: A\n"
+    )
+    cfg = load_battery_config("caici_local", str(cfg_path))
+    # Defaults: None means "fall back to the adapter's own default".
+    assert cfg.adapter_timeout_s is None
+    assert cfg.adapter_max_attempts is None
+    assert cfg.adapter_rpm is None
+
+
+def test_build_adapter_forwards_knobs_to_caici(monkeypatch):
+    from kst.cli import build_adapter
+
+    monkeypatch.setenv("CAICI_ENDPOINT", "http://localhost:8082/v1/chat/completions")
+    adapter = build_adapter(
+        "caici",
+        timeout_s=42.0,
+        max_attempts=9,
+        rpm=7,
+    )
+    assert adapter.timeout_s == 42.0
+    assert adapter.max_attempts == 9
+    assert adapter._rate_limiter._rpm == 7
+
+
+def test_build_adapter_omitted_knobs_preserve_caici_defaults():
+    from kst.cli import build_adapter
+
+    adapter = build_adapter("caici_local")
+    # CaiciAdapter's own __init__ defaults: timeout_s=60.0, max_attempts=5,
+    # rpm=60 (DEFAULT_RPM). The knobs we did not pass must match those.
+    assert adapter.timeout_s == 60.0
+    assert adapter.max_attempts == 5
+    assert adapter._rate_limiter._rpm == 60
