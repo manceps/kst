@@ -487,9 +487,9 @@ def _write_markdown_report(report: Any, path: str) -> None:
     # Headline table: surface the integrity-capped composite, the raw
     # composite, and the multiplier side-by-side so readers can see
     # the gap and judge whether the integrity cap is the dominant
-    # signal in the headline. v1.0.0 reported only the corrected
-    # composite, which made an integrity-capped 6.55 indistinguishable
-    # from a genuinely-26.20 system.
+    # signal in the headline. Earlier versions reported only the
+    # corrected composite, which made an integrity-capped composite
+    # indistinguishable from a genuinely high-scoring system.
     lines.append("")
     lines.append("## Composite scores")
     lines.append("")

@@ -1,6 +1,6 @@
 # KST Index, Anti-Anthropomorphization Apparatus
 
-**Document type:** Governance artifact.
+**Document type:** Standard methodology document.
 **Status:** v1.0.
 **Authored by Al Kari, Manceps Inc.** (research@manceps.com).
 **Date:** 2026-05-16.

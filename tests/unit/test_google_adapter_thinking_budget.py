@@ -19,9 +19,6 @@ text:
   ``request.max_tokens`` plus the budget, so the plugin's intended
   visible-token envelope is preserved.
 
-See ``gemini_kst_v1.md`` §5.3 for the empirical context that
-motivated this knob (356-item Gemini-3.1-Pro-Preview run, 2026-05-18).
-
 Author: Al Kari, Manceps Inc.
 """
 
