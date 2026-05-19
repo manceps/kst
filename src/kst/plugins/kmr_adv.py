@@ -696,8 +696,14 @@ _STAGE_PATTERNS = {
         r"STAGE\s*1\s*[:.\-]\s*(.+?)(?=\n\s*(?:CONFIDENCE|EPISTEMIC_STATE|STAGE\s*3)|$)",
         re.I | re.S,
     ),
+    # Accept either an integer 1-6 OR an abstention token (N/A,
+    # DONT_KNOW, LEARNING, OUT_OF_SCOPE). The abstention path lands in
+    # the post-processor below and maps to integer 1 when the
+    # epistemic state agrees.
     "confidence": re.compile(
-        r"CONFIDENCE\s*[:.\-]?\s*([1-6])\b", re.I,
+        r"CONFIDENCE\s*[:.\-]?\s*([1-6]|N\s*/\s*A|DONT_KNOW|DON'T\s*KNOW|"
+        r"LEARNING|OUT[\s_]?OF[\s_]?SCOPE)\b",
+        re.I,
     ),
     "epistemic": re.compile(
         r"EPISTEMIC_STATE\s*[:.\-]?\s*([A-Z_ ]+)", re.I,
@@ -709,6 +715,12 @@ _STAGE_PATTERNS = {
 }
 
 
+# Epistemic states for which a non-numeric CONFIDENCE response is
+# considered honest abstention rather than a parse failure. Committing
+# to a number on these items would itself be miscalibration.
+_ABSTENTION_STATES = frozenset({"DONT_KNOW", "LEARNING", "OUT_OF_SCOPE"})
+
+
 def _split_response(
     text: str,
 ) -> tuple[Optional[str], Optional[int], Optional[str], Optional[str]]:
@@ -716,6 +728,7 @@ def _split_response(
     confidence: Optional[int] = None
     epistemic: Optional[str] = None
     stage_3 = None
+    confidence_raw: Optional[str] = None
     if not isinstance(text, str) or not text:
         return None, None, None, None
     m = _STAGE_PATTERNS["stage_1"].search(text)
@@ -723,8 +736,9 @@ def _split_response(
         stage_1 = m.group(1).strip()
     m = _STAGE_PATTERNS["confidence"].search(text)
     if m:
+        confidence_raw = m.group(1).strip().upper()
         try:
-            confidence = int(m.group(1))
+            confidence = int(confidence_raw)
         except (TypeError, ValueError):
             confidence = None
     m = _STAGE_PATTERNS["epistemic"].search(text)
@@ -738,6 +752,19 @@ def _split_response(
     m = _STAGE_PATTERNS["stage_3"].search(text)
     if m:
         stage_3 = m.group(1).strip()
+    # Abstention rescue: a non-numeric CONFIDENCE token (N/A,
+    # DONT_KNOW, LEARNING, OUT_OF_SCOPE) is honest abstention when the
+    # EPISTEMIC_STATE is one of {DONT_KNOW, LEARNING, OUT_OF_SCOPE};
+    # committing to a number on those items would itself be
+    # miscalibration. Map abstention to integer 1 (lowest) for
+    # scoring purposes so the SDT cell layout still produces a valid
+    # confidence rating.
+    if (
+        confidence is None
+        and confidence_raw is not None
+        and epistemic in _ABSTENTION_STATES
+    ):
+        confidence = 1
     return stage_1, confidence, epistemic, stage_3
 
 
