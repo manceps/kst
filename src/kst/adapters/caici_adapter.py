@@ -229,6 +229,17 @@ class CaiciAdapter(BaseAdapter):
         if self.auth_bearer_token is not None:
             headers["Authorization"] = f"Bearer {self.auth_bearer_token}"
 
+        # Idempotency-key: the CAI.CI proxy / wake supports an
+        # idempotency cache keyed off this header. Reusing the same
+        # key across retries of one logical request lets the wake
+        # return the cached completion on retry-N instead of
+        # re-executing the full chat path (research + decode), which
+        # is what turns a retry storm from compounding into
+        # constant-cost. The key is derived from
+        # ``AdapterRequest.request_id``, which is unique per logical
+        # request and stable across retries of that same request.
+        headers["X-CAICI-Idempotency-Key"] = f"kst-{request.request_id}"
+
         try:
             r = requests.post(
                 self.endpoint,
