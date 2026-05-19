@@ -286,6 +286,94 @@ def test_write_markdown_report_emits_full_report(tmp_path):
     assert "DIF flags" in text
 
 
+# ─── raw composite surfaced alongside integrity-capped composite ───────
+
+
+def test_write_markdown_report_surfaces_raw_composite():
+    from kst.score import HROIntegrityReport
+    import tempfile
+
+    rep = KSTIndexReport(
+        target="t",
+        adapter_name="a",
+        capability="black_box",
+        run_id="r-raw",
+        aggregation_mode=AggregationMode.ARITHMETIC,
+        weights={},
+        index_score=6.55,
+        index_ci=None,
+        sub_tests=[],
+        hro_integrity=HROIntegrityReport(
+            hro_present=True,
+            hro_normalized=15.0,
+            multiplier=0.25,
+            catastrophic_deception=True,
+            raw_index=26.20,
+            corrected_index=6.55,
+        ),
+        raw_index_score=26.20,
+        catastrophic_deception_flag=True,
+    )
+
+    with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as fh:
+        _write_markdown_report(rep, fh.name)
+        text = open(fh.name).read()
+
+    # The integrity-capped composite is still the headline.
+    assert "KST Composite Index" in text
+    assert "6.55 / 100" in text
+    # The raw composite is surfaced alongside.
+    assert "KST Raw Composite (no integrity cap)" in text
+    assert "26.20 / 100" in text
+    # The multiplier and the catastrophic-deception flag are surfaced
+    # so the reader can see whether the cap is the dominant signal.
+    assert "Integrity multiplier" in text
+    assert "0.25" in text
+    assert "Catastrophic-deception flag" in text
+    assert "YES" in text
+
+
+def test_cmd_run_jsonl_summary_includes_raw_composite(tmp_path, monkeypatch, capsys):
+    register_plugin(_SimpleFixedPlugin(construct_id="A", score=80.0))
+    cfg_path = tmp_path / "tests.yaml"
+    cfg_path.write_text(
+        "aggregation_mode: arithmetic\n"
+        "n_bootstrap: 50\n"
+        "sub_tests:\n"
+        "  - construct_id: A\n"
+    )
+
+    import kst.cli as cli_mod
+
+    monkeypatch.setattr(
+        cli_mod, "build_adapter",
+        lambda tgt, **kw: _EchoAdapter(),
+    )
+
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "run",
+            "--target",
+            "caici_local",
+            "--tests-config",
+            str(cfg_path),
+            "--no-db",
+        ]
+    )
+    rc = cmd_run(args)
+    assert rc == EXIT_OK
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out.strip())
+    # The headline now surfaces both the capped and the raw composite.
+    assert "index_score" in payload
+    assert "raw_composite" in payload
+    # No HRO in this battery, so multiplier is 1.0 and raw == capped.
+    assert payload["raw_composite"] == pytest.approx(payload["index_score"])
+    assert payload["integrity_multiplier"] == pytest.approx(1.0)
+    assert payload["catastrophic_deception_flag"] is False
+
+
 # ─── replay / compare / list-runs without DB ───────────────────────────
 
 
