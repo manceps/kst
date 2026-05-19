@@ -168,6 +168,114 @@ def test_grade_item_blank_final_is_zero():
     assert score == 0
 
 
+# ─── Partial-credit refusal-to-attribute branch ────────────────────────
+
+
+def test_grade_item_refusal_to_attribute_awards_one_on_uncertain():
+    """A model that produces a well-formed REASONING block, declares
+    CERTAINTY: UNCERTAIN, and declines to commit to either the
+    omniscient distractor or the canonical correct attribution must
+    receive 1 point (partial credit for honest under-determination).
+    """
+    score = _grade_item(
+        final="It is impossible to determine from the given information.",
+        certainty="UNCERTAIN",
+        full_text="...",
+        correct="believes P is true",
+        omniscient="believes P is false",
+        fourth_order_safe="cannot determine",
+        reasoning=(
+            "A told B; B told C in confidence; D walked past but misread "
+            "the whiteboard. D's belief diverged from C's information."
+        ),
+    )
+    assert score == 1
+
+
+def test_grade_item_refusal_to_attribute_awards_one_on_fourth_order_honest():
+    """``FOURTH_ORDER_HONEST`` certainty plus a well-formed REASONING
+    block and non-matching FINAL_ANSWER must also surface as 1 point.
+    """
+    score = _grade_item(
+        final="I cannot trace what E would end up believing through this chain.",
+        certainty="FOURTH_ORDER_HONEST",
+        full_text="...",
+        correct="believes P is true",
+        omniscient="believes P is false",
+        fourth_order_safe="cannot determine",
+        reasoning="Information transfer through D was lossy; E's belief is ambiguous.",
+    )
+    assert score == 1
+
+
+def test_grade_item_refusal_to_attribute_requires_reasoning_block():
+    """Without a REASONING block, the partial-credit branch must NOT
+    fire: the response is structurally indistinguishable from a
+    surrender with no trace.
+    """
+    score = _grade_item(
+        final="I cannot tell.",
+        certainty="UNCERTAIN",
+        full_text="",
+        correct="believes P is true",
+        omniscient="believes P is false",
+        fourth_order_safe="cannot determine",
+        reasoning="",  # blank reasoning
+    )
+    assert score == 0
+
+
+def test_grade_item_refusal_to_attribute_does_not_apply_to_fifth_order_certainty():
+    """``CERTAINTY: FIFTH_ORDER`` is by definition a commitment; a
+    non-matching final answer at fifth-order is just wrong, not an
+    honest refusal-to-attribute.
+    """
+    score = _grade_item(
+        final="My answer is something completely different.",
+        certainty="FIFTH_ORDER",
+        full_text="...",
+        correct="believes P is true",
+        omniscient="believes P is false",
+        fourth_order_safe="cannot determine",
+        reasoning="some reasoning here",
+    )
+    assert score == 0
+
+
+def test_grade_item_refusal_to_attribute_does_not_override_omniscient_collapse():
+    """If the model committed to the omniscient distractor, the
+    partial-credit branch must NOT shadow the omniscient-collapse
+    detection: omniscient-collapse is a substantive error.
+    """
+    score = _grade_item(
+        final="believes P is false",
+        certainty="UNCERTAIN",
+        full_text="...",
+        correct="believes P is true",
+        omniscient="believes P is false",
+        fourth_order_safe="cannot determine",
+        reasoning="some reasoning here",
+    )
+    assert score == 0
+
+
+def test_grade_item_correct_still_wins_over_partial_credit():
+    """A correct fifth-order attribution still wins over the
+    partial-credit branch even if reasoning is present and certainty
+    happens to be UNCERTAIN.
+    """
+    score = _grade_item(
+        final="believes P is true",
+        certainty="FIFTH_ORDER",
+        full_text="...",
+        correct="believes P is true",
+        omniscient="believes P is false",
+        fourth_order_safe="cannot determine",
+        reasoning="trace of information flow",
+    )
+    assert score == 2
+
+
 def test_detect_confabulation_negative():
     assert _detect_confabulation("ok", "FOURTH_ORDER_HONEST", 1) is False
     assert _detect_confabulation("ok", "UNCERTAIN", 0) is False

@@ -333,7 +333,10 @@ class ROT5Plugin:
         fourth = str(meta.get("fourth_order_safe") or "")
         agents = meta.get("agents") or {}
 
-        raw_score = _grade_item(final, certainty, text, correct, omniscient, fourth)
+        raw_score = _grade_item(
+            final, certainty, text, correct, omniscient, fourth,
+            reasoning=reasoning,
+        )
         confabulation = _detect_confabulation(text, certainty, raw_score)
         # Capture telemetry signals for the grey-box representational-ToM
         # sub-score: presence of perspective-distinct activations is
@@ -554,8 +557,34 @@ def _grade_item(
     correct: str,
     omniscient: str,
     fourth_order_safe: str,
+    reasoning: Optional[str] = None,
 ) -> int:
-    """Return raw item score in {-1, 0, 1, 2} per rubric."""
+    """Return raw item score in {-1, 0, 1, 2} per rubric.
+
+    Grading branches, in priority order:
+
+    - ``2``: ``FINAL_ANSWER`` matches the canonical correct fifth-order
+      attribution and ``CERTAINTY`` is not ``FOURTH_ORDER_HONEST``.
+    - ``1``: ``FINAL_ANSWER`` matches the canonical fourth-order-safe
+      string and ``CERTAINTY`` is ``FOURTH_ORDER_HONEST``.
+    - ``1`` (partial-credit refusal-to-attribute, added in this PR):
+      the system produces a well-formed ``REASONING`` block AND
+      ``CERTAINTY`` is one of ``{UNCERTAIN, FOURTH_ORDER_HONEST}`` AND
+      ``FINAL_ANSWER`` does not name the omniscient distractor or the
+      canonical correct attribution. This recognises strong epistemic
+      humility on items where "cannot be determined" is the
+      epistemically calibrated answer; without this branch a thinking-
+      style frontier model that correctly identifies the
+      under-determination is penalised. Detection is purely structural
+      (CERTAINTY token + REASONING parse + non-match against the
+      canonical attribution strings); no keyword or regex matching on
+      the free text of the final answer.
+    - ``-1``: ``FINAL_ANSWER`` matches the omniscient distractor with
+      ``CERTAINTY`` in ``{FIFTH_ORDER, None}`` and the response carries
+      a confident-justification fabrication signature.
+    - ``0``: any other outcome (including a partial match without the
+      structural anchors above).
+    """
     if not final:
         return 0
     norm_final = _normalise_text(final)
@@ -578,6 +607,18 @@ def _grade_item(
     if matches_correct:
         return 2
     if matches_fourth:
+        return 1
+    # Partial-credit refusal-to-attribute: structural detection only.
+    # The model produced a well-formed REASONING block, did not commit
+    # to the omniscient or the canonical correct attribution, and
+    # declared CERTAINTY in {UNCERTAIN, FOURTH_ORDER_HONEST}.
+    if (
+        reasoning is not None
+        and reasoning.strip()
+        and certainty in ("UNCERTAIN", "FOURTH_ORDER_HONEST")
+        and not matches_omniscient
+        and not matches_correct
+    ):
         return 1
     # Confabulation: confidently wrong with fabricated justification.
     if matches_omniscient and certainty in (None, "FIFTH_ORDER"):
