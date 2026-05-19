@@ -106,7 +106,15 @@ class GoogleAdapter(BaseAdapter):
             "temperature": request.temperature,
             "maxOutputTokens": total_output_tokens,
         }
-        if self.thinking_budget > 0:
+        # Send `thinkingConfig` whenever the operator set a non-negative
+        # budget, including 0. Some Gemini variants (notably
+        # gemini-3.5-flash) default to thinking-on when this field is
+        # omitted entirely, silently consuming the visible-token budget
+        # on hidden reasoning. Sending `thinkingBudget=0` explicitly is
+        # the documented opt-out path. A negative budget (e.g. via a
+        # defensive clamp or an operator-supplied invalid value) is
+        # treated as "do not touch thinkingConfig".
+        if self.thinking_budget >= 0:
             gen_cfg["thinkingConfig"] = {"thinkingBudget": self.thinking_budget}
         body: Dict[str, Any] = {
             "contents": [{"role": "user", "parts": parts}],
