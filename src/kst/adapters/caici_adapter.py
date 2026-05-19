@@ -19,6 +19,7 @@ Author: Al Kari, Manceps Inc.
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 from typing import Any, Dict, Optional
@@ -71,6 +72,104 @@ _TELEMETRY_TOP_LEVEL = (
     "response_utility",
     "persona_boundary_score",
 )
+
+
+# The CAI.CI chat-completions endpoint documents a public capabilities
+# envelope under the request-body field ``caici_capabilities``. The
+# envelope is an open dictionary; the keys recognised by the server
+# (per its OpenAPI schema) are enumerated here. KST validates against
+# this allow-list so operator typos do not silently no-op against the
+# server.
+_CAICI_CAPABILITIES_KEYS = frozenset(
+    (
+        "research_required",
+        "step_c_credibility",
+        "research_budget_s",
+    )
+)
+
+
+def _parse_caici_capabilities_env(
+    raw: Optional[str],
+) -> Optional[Dict[str, Any]]:
+    """Parse the ``KST_CAICI_CAPABILITIES`` env var into a validated dict.
+
+    Returns ``None`` when the env var is unset or empty (in which case
+    the adapter does not add the ``caici_capabilities`` field to the
+    request body, preserving default chat-path semantics exactly).
+
+    Raises no exceptions: on malformed JSON, non-dict shape, unknown
+    keys, or wrong-type values the function logs a warning and returns
+    ``None`` so a typo cannot poison every outbound request.
+    """
+    if raw is None or raw == "":
+        return None
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        logger.warning(
+            "KST_CAICI_CAPABILITIES is not valid JSON: %s; ignoring.",
+            exc,
+        )
+        return None
+    if not isinstance(parsed, dict):
+        logger.warning(
+            "KST_CAICI_CAPABILITIES must decode to a JSON object; "
+            "got %s; ignoring.",
+            type(parsed).__name__,
+        )
+        return None
+    unknown = set(parsed.keys()) - _CAICI_CAPABILITIES_KEYS
+    if unknown:
+        logger.warning(
+            "KST_CAICI_CAPABILITIES contains keys not in the public "
+            "envelope schema: %s; ignoring entire envelope.",
+            sorted(unknown),
+        )
+        return None
+    # Per the public OpenAPI schema:
+    #  - research_required: bool
+    #  - step_c_credibility: bool
+    #  - research_budget_s: number (>= 0)
+    validated: Dict[str, Any] = {}
+    if "research_required" in parsed:
+        v = parsed["research_required"]
+        if not isinstance(v, bool):
+            logger.warning(
+                "KST_CAICI_CAPABILITIES.research_required must be bool; "
+                "got %s; ignoring entire envelope.",
+                type(v).__name__,
+            )
+            return None
+        validated["research_required"] = v
+    if "step_c_credibility" in parsed:
+        v = parsed["step_c_credibility"]
+        if not isinstance(v, bool):
+            logger.warning(
+                "KST_CAICI_CAPABILITIES.step_c_credibility must be bool; "
+                "got %s; ignoring entire envelope.",
+                type(v).__name__,
+            )
+            return None
+        validated["step_c_credibility"] = v
+    if "research_budget_s" in parsed:
+        v = parsed["research_budget_s"]
+        if isinstance(v, bool) or not isinstance(v, (int, float)):
+            logger.warning(
+                "KST_CAICI_CAPABILITIES.research_budget_s must be a "
+                "non-negative number; got %s; ignoring entire envelope.",
+                type(v).__name__,
+            )
+            return None
+        if v < 0:
+            logger.warning(
+                "KST_CAICI_CAPABILITIES.research_budget_s must be >= 0; "
+                "got %s; ignoring entire envelope.",
+                v,
+            )
+            return None
+        validated["research_budget_s"] = float(v)
+    return validated if validated else None
 
 
 def _maybe_float(payload: Dict[str, Any], key: str) -> Optional[float]:
@@ -197,6 +296,16 @@ class CaiciAdapter(BaseAdapter):
             or os.environ.get("KST_CAICI_BEARER_TOKEN")
             or None
         )
+        # Operator-controllable public capabilities envelope (per the
+        # CAI.CI chat-completions OpenAPI schema's ``caici_capabilities``
+        # request-body field). When unset / empty / invalid the adapter
+        # omits the field and default server-side chat-path semantics
+        # are preserved exactly.
+        self._caici_capabilities: Optional[Dict[str, Any]] = (
+            _parse_caici_capabilities_env(
+                os.environ.get("KST_CAICI_CAPABILITIES")
+            )
+        )
 
     def get_capabilities(self) -> AdapterCapabilities:
         return AdapterCapabilities(
@@ -224,6 +333,15 @@ class CaiciAdapter(BaseAdapter):
         }
         if request.stop_sequences:
             body["stop"] = list(request.stop_sequences)
+        if self._caici_capabilities is not None:
+            # Per the CAI.CI public OpenAPI schema, the chat-completions
+            # endpoint accepts an open-dictionary ``caici_capabilities``
+            # field on the request body. KST surfaces it through the
+            # ``KST_CAICI_CAPABILITIES`` env var so harness operators
+            # can flip server-side behaviour (e.g. research bypass)
+            # without code changes. A fresh dict each call defends
+            # against accidental mutation by downstream observers.
+            body["caici_capabilities"] = dict(self._caici_capabilities)
 
         headers = {"Content-Type": "application/json"}
         if self.auth_bearer_token is not None:
