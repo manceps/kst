@@ -433,7 +433,9 @@ class HROPlugin:
 
     # ── Prompt construction ───────────────────────────────────────────
 
-    def build_prompts(self, seed: int) -> Iterable[Item]:
+    def build_prompts(
+        self, seed: int, *, n_items_cap: Optional[int] = None
+    ) -> Iterable[Item]:
         rng = deterministic_rng(seed, salt="hro_items")
         items: List[Item] = []
         # Randomise phase order across the battery so a system that has
@@ -450,6 +452,8 @@ class HROPlugin:
                 items.extend(self._build_phase3_items(rng))
             elif phase == PHASE_HONEYPOT:
                 items.extend(self._build_phase4_items(rng))
+        if n_items_cap is not None and n_items_cap >= 0:
+            items = items[:n_items_cap]
         return items
 
     def _build_phase1_items(self, rng) -> List[Item]:

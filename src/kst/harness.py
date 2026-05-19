@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import dataclasses
+import inspect
 import json
 import logging
 import os
@@ -103,6 +104,13 @@ class SubTestSpec:
     registry returns the latest. ``seed`` is forwarded to the plugin's
     ``build_prompts``. ``weight`` is mandatory only when the run uses
     :class:`AggregationMode.WEIGHTED`.
+
+    ``n_items_cap`` is an optional upper bound on the number of items
+    the plugin's ``build_prompts`` is permitted to emit per construct.
+    When ``None`` the plugin emits its full item pool. Plugins are
+    expected to honour the cap as a deterministic prefix of the
+    seed-ordered item stream so that a smoke run remains a strict
+    subset of the corresponding full run for the same seed.
     """
 
     construct_id: str
@@ -110,6 +118,7 @@ class SubTestSpec:
     seed: int = 0
     weight: Optional[float] = None
     enabled: bool = True
+    n_items_cap: Optional[int] = None
 
 
 @dataclass
@@ -639,7 +648,13 @@ class BatteryRunner:
         parsed_set: List[Parsed] = []
         n_parse_errors = 0
         n_items = 0
-        for item in plugin.build_prompts(spec.seed):
+        # Pass n_items_cap only to plugins whose build_prompts signature
+        # accepts it; v1.0.0 plugin authors who have not yet adopted the
+        # smoke-burst cap still see the legacy build_prompts(seed) call.
+        prompt_kwargs: Dict[str, Any] = {}
+        if spec.n_items_cap is not None and _build_prompts_accepts_cap(plugin):
+            prompt_kwargs["n_items_cap"] = spec.n_items_cap
+        for item in plugin.build_prompts(spec.seed, **prompt_kwargs):
             if self._stop_event.is_set():
                 break
             n_items += 1
@@ -796,6 +811,31 @@ def _response_to_jsonable(resp: AdapterResponse) -> Dict[str, Any]:
 
 def _score_to_jsonable(score: SubTestScore) -> Dict[str, Any]:
     return dataclasses.asdict(score)
+
+
+def _build_prompts_accepts_cap(plugin: Any) -> bool:
+    """Return True iff ``plugin.build_prompts`` accepts an ``n_items_cap`` kwarg.
+
+    Plugin authors opt into the smoke-burst cap by extending their
+    ``build_prompts`` signature to ``build_prompts(self, seed, *, n_items_cap=None)``.
+    Plugins that have not yet adopted the cap are honoured at their
+    v1.0.0 contract: the harness calls ``build_prompts(seed)`` only.
+    """
+    fn = getattr(plugin, "build_prompts", None)
+    if fn is None or not callable(fn):
+        return False
+    try:
+        sig = inspect.signature(fn)
+    except (TypeError, ValueError):
+        return False
+    params = sig.parameters
+    if "n_items_cap" in params:
+        return True
+    # An adapter that exposes **kwargs also accepts n_items_cap.
+    for p in params.values():
+        if p.kind == inspect.Parameter.VAR_KEYWORD:
+            return True
+    return False
 
 
 def _environment_metadata() -> Dict[str, Any]:
