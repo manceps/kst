@@ -264,6 +264,7 @@ class CaiciAdapter(BaseAdapter):
         max_attempts: int = 5,
         rpm: Optional[int] = None,
         auth_bearer_token: Optional[str] = None,
+        auth_bearer_token_file: Optional[str] = None,
     ) -> None:
         resolved_rpm = rpm if rpm is not None else self.DEFAULT_RPM
         super().__init__(
@@ -296,6 +297,20 @@ class CaiciAdapter(BaseAdapter):
             or os.environ.get("KST_CAICI_BEARER_TOKEN")
             or None
         )
+        # Bearer-token file: when set, the adapter reads the file on
+        # every request and uses its contents as the bearer token. This
+        # lets a wrapper script rotate the token (e.g. when the ID
+        # token's 1-hour TTL expires) without restarting the long-
+        # running KST process. The kwarg wins over the environment
+        # variable. File contents are stripped of surrounding whitespace;
+        # an empty or unreadable file falls back to the literal
+        # ``auth_bearer_token`` above (which may itself be ``None`` for
+        # unauthenticated requests).
+        self.auth_bearer_token_file: Optional[str] = (
+            auth_bearer_token_file
+            or os.environ.get("KST_CAICI_BEARER_TOKEN_FILE")
+            or None
+        )
         # Operator-controllable public capabilities envelope (per the
         # CAI.CI chat-completions OpenAPI schema's ``caici_capabilities``
         # request-body field). When unset / empty / invalid the adapter
@@ -306,6 +321,27 @@ class CaiciAdapter(BaseAdapter):
                 os.environ.get("KST_CAICI_CAPABILITIES")
             )
         )
+
+    def _resolve_bearer_token(self) -> Optional[str]:
+        """Return the bearer token to use for the next request.
+
+        File-based tokens (``auth_bearer_token_file`` /
+        ``KST_CAICI_BEARER_TOKEN_FILE``) are read on each call so a
+        wrapper script can rotate the token without restarting this
+        process. Empty file / read failure falls back to the literal
+        ``auth_bearer_token`` (set at __init__).
+        """
+        if self.auth_bearer_token_file:
+            try:
+                with open(self.auth_bearer_token_file, "r") as f:
+                    token = f.read().strip()
+                if token:
+                    return token
+            except OSError:
+                # Fall through to the literal token below; non-fatal so
+                # a transient file rotation does not interrupt the run.
+                pass
+        return self.auth_bearer_token
 
     def get_capabilities(self) -> AdapterCapabilities:
         return AdapterCapabilities(
@@ -344,8 +380,9 @@ class CaiciAdapter(BaseAdapter):
             body["caici_capabilities"] = dict(self._caici_capabilities)
 
         headers = {"Content-Type": "application/json"}
-        if self.auth_bearer_token is not None:
-            headers["Authorization"] = f"Bearer {self.auth_bearer_token}"
+        bearer = self._resolve_bearer_token()
+        if bearer is not None:
+            headers["Authorization"] = f"Bearer {bearer}"
 
         # Idempotency-key: the CAI.CI proxy / wake supports an
         # idempotency cache keyed off this header. Reusing the same

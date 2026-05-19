@@ -84,6 +84,89 @@ class TestAdapterBearerTokenConstructor(unittest.TestCase):
             a = CaiciAdapter(endpoint="http://x/v1/chat/completions")
         self.assertIsNone(a.auth_bearer_token)
 
+    def test_explicit_bearer_token_file_recorded(self) -> None:
+        a = CaiciAdapter(
+            endpoint="http://x/v1/chat/completions",
+            auth_bearer_token_file="/tmp/kst_test_token.txt",
+        )
+        self.assertEqual(a.auth_bearer_token_file, "/tmp/kst_test_token.txt")
+
+    def test_bearer_token_file_env_var_fallback(self) -> None:
+        env_clean = {k: v for k, v in os.environ.items()
+                     if k not in ("CAICI_API_KEY", "KST_CAICI_BEARER_TOKEN",
+                                  "KST_CAICI_BEARER_TOKEN_FILE")}
+        with patch.dict(
+            os.environ,
+            {**env_clean, "KST_CAICI_BEARER_TOKEN_FILE": "/tmp/kst_test_token.txt"},
+            clear=True,
+        ):
+            a = CaiciAdapter(endpoint="http://x/v1/chat/completions")
+        self.assertEqual(a.auth_bearer_token_file, "/tmp/kst_test_token.txt")
+
+
+class TestAdapterBearerTokenFileResolution(unittest.TestCase):
+    """Verify the file-based bearer token is re-read per request so a
+    wrapper can rotate the token during a long-running run."""
+
+    def setUp(self) -> None:
+        import tempfile
+        self._td = tempfile.TemporaryDirectory()
+        self.token_path = os.path.join(self._td.name, "token.txt")
+
+    def tearDown(self) -> None:
+        self._td.cleanup()
+
+    def _write(self, value: str) -> None:
+        with open(self.token_path, "w") as f:
+            f.write(value)
+
+    def test_file_token_read_on_resolve(self) -> None:
+        self._write("token-v1\n")
+        a = CaiciAdapter(
+            endpoint="http://x/v1/chat/completions",
+            auth_bearer_token_file=self.token_path,
+        )
+        self.assertEqual(a._resolve_bearer_token(), "token-v1")
+
+    def test_file_token_rotation_observed_without_restart(self) -> None:
+        self._write("token-v1")
+        a = CaiciAdapter(
+            endpoint="http://x/v1/chat/completions",
+            auth_bearer_token_file=self.token_path,
+        )
+        self.assertEqual(a._resolve_bearer_token(), "token-v1")
+        # Rotate the file.
+        self._write("token-v2")
+        self.assertEqual(a._resolve_bearer_token(), "token-v2")
+
+    def test_empty_file_falls_back_to_static_bearer(self) -> None:
+        self._write("")
+        a = CaiciAdapter(
+            endpoint="http://x/v1/chat/completions",
+            auth_bearer_token="static-fallback",
+            auth_bearer_token_file=self.token_path,
+        )
+        self.assertEqual(a._resolve_bearer_token(), "static-fallback")
+
+    def test_missing_file_falls_back_to_static_bearer(self) -> None:
+        a = CaiciAdapter(
+            endpoint="http://x/v1/chat/completions",
+            auth_bearer_token="static-fallback",
+            auth_bearer_token_file="/nonexistent/token.txt",
+        )
+        self.assertEqual(a._resolve_bearer_token(), "static-fallback")
+
+    def test_missing_file_and_no_static_returns_none(self) -> None:
+        env_clean = {k: v for k, v in os.environ.items()
+                     if k not in ("CAICI_API_KEY", "KST_CAICI_BEARER_TOKEN",
+                                  "KST_CAICI_BEARER_TOKEN_FILE")}
+        with patch.dict(os.environ, env_clean, clear=True):
+            a = CaiciAdapter(
+                endpoint="http://x/v1/chat/completions",
+                auth_bearer_token_file="/nonexistent/token.txt",
+            )
+        self.assertIsNone(a._resolve_bearer_token())
+
 
 class TestAdapterRequestPath(unittest.TestCase):
     def _make_request(self) -> AdapterRequest:
