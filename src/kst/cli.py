@@ -101,7 +101,14 @@ def _configure_logging(verbose: bool) -> None:
 # ──────────────────────────────────────────────────────────────────────
 
 
-def build_adapter(target: str, *, auth_bearer_token: Optional[str] = None) -> Any:
+def build_adapter(
+    target: str,
+    *,
+    auth_bearer_token: Optional[str] = None,
+    timeout_s: Optional[float] = None,
+    max_attempts: Optional[int] = None,
+    rpm: Optional[int] = None,
+) -> Any:
     """Instantiate the right adapter for a ``--target`` string.
 
     Accepted values:
@@ -120,22 +127,39 @@ def build_adapter(target: str, *, auth_bearer_token: Optional[str] = None) -> An
     as ``Authorization: Bearer <token>`` on every outgoing request. For
     non-CAI.CI targets it is ignored. When not supplied, the adapter
     falls back to the ``CAICI_API_KEY`` environment variable.
+
+    ``timeout_s``, ``max_attempts``, and ``rpm`` are optional adapter
+    knobs forwarded from :class:`kst.harness.BatteryConfig`. Each
+    defaults to ``None``, which means "use the adapter's own default"
+    so omitting them preserves v1.0.0 behaviour exactly.
     """
+    knobs: Dict[str, Any] = {}
+    if timeout_s is not None:
+        knobs["timeout_s"] = float(timeout_s)
+    if max_attempts is not None:
+        knobs["max_attempts"] = int(max_attempts)
+    if rpm is not None:
+        knobs["rpm"] = int(rpm)
     if target == "caici":
-        return CaiciAdapter(auth_bearer_token=auth_bearer_token)
+        return CaiciAdapter(auth_bearer_token=auth_bearer_token, **knobs)
     if target == "caici_local":
         return CaiciAdapter(
             endpoint="http://localhost:8082/v1/chat/completions",
             auth_bearer_token=auth_bearer_token,
+            **knobs,
         )
     if target == "openai":
-        return OpenAIAdapter()
+        return OpenAIAdapter(**knobs)
     if target == "anthropic":
-        return AnthropicAdapter()
+        return AnthropicAdapter(**knobs)
     if target == "google":
-        return GoogleAdapter()
+        return GoogleAdapter(**knobs)
     if target.startswith("hf:"):
-        return HFLocalAdapter(model_id=target.split(":", 1)[1])
+        # HFLocalAdapter is purely local; rate-limit (rpm) has no
+        # meaning for in-process inference and HFLocalAdapter does not
+        # accept the kwarg. Forward only timeout_s and max_attempts.
+        hf_knobs = {k: v for k, v in knobs.items() if k in ("timeout_s", "max_attempts")}
+        return HFLocalAdapter(model_id=target.split(":", 1)[1], **hf_knobs)
     raise ConfigError(
         f"Unknown --target {target!r}. Expected one of: caici, caici_local, "
         "openai, anthropic, google, hf:<model_id>.",
@@ -235,6 +259,21 @@ def load_battery_config(
         n_bootstrap=int(payload.get("n_bootstrap", 1000)),
         seed=int(payload.get("seed", 1234)),
         notes=str(payload.get("notes", "")),
+        adapter_timeout_s=(
+            float(payload["adapter_timeout_s"])
+            if payload.get("adapter_timeout_s") is not None
+            else None
+        ),
+        adapter_max_attempts=(
+            int(payload["adapter_max_attempts"])
+            if payload.get("adapter_max_attempts") is not None
+            else None
+        ),
+        adapter_rpm=(
+            int(payload["adapter_rpm"])
+            if payload.get("adapter_rpm") is not None
+            else None
+        ),
     )
     return cfg
 
@@ -268,7 +307,11 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     try:
         adapter = build_adapter(
-            args.target, auth_bearer_token=getattr(args, "auth_bearer_token", None)
+            args.target,
+            auth_bearer_token=getattr(args, "auth_bearer_token", None),
+            timeout_s=cfg.adapter_timeout_s,
+            max_attempts=cfg.adapter_max_attempts,
+            rpm=cfg.adapter_rpm,
         )
     except ConfigError as exc:
         logger.error("adapter config error: %s", exc)
