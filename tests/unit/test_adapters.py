@@ -219,7 +219,72 @@ def test_base_adapter_compute_rate_limit_backoff_falls_back_when_absent():
     adapter = _DummyAdapter([_ok_response(AdapterRequest(prompt="x"))])
     exc = RateLimitError("slow", retry_after_s=None)
     wait = adapter._compute_rate_limit_backoff(exc, 1)
+    # _DummyAdapter does not declare an rpm, so the rate-window floor
+    # is disabled and the wait is bounded by ``backoff_max_s``.
     assert 0.0 <= wait <= 0.05
+
+
+class _RpmDummyAdapter(BaseAdapter):
+    """A dummy adapter that declares a real rpm so the rate-window
+    floor in :meth:`BaseAdapter._compute_rate_limit_backoff` is active.
+    """
+
+    name = "dummy_rpm"
+    capability = AdapterCapability.BLACK_BOX
+
+    def __init__(self, rpm: int, backoff_max_s: float = 1000.0) -> None:
+        super().__init__(
+            timeout_s=1.0,
+            max_attempts=3,
+            backoff_base_s=0.01,
+            backoff_max_s=backoff_max_s,
+            rpm=rpm,
+            rng=random.Random(42),
+        )
+
+    def _send_once(self, request):  # pragma: no cover - never invoked
+        raise NotImplementedError
+
+
+def test_compute_rate_limit_backoff_floors_at_one_full_rpm_window():
+    """When no Retry-After is supplied, the wait must be at least one
+    full rate-window per retry attempt so retry-N lands in retry-N's
+    own fresh budget bucket. With rpm=60 the window is 1.0s, so
+    attempt=1 floors at 1.0s, attempt=2 at 2.0s, attempt=3 at 3.0s.
+    """
+    adapter = _RpmDummyAdapter(rpm=60, backoff_max_s=1000.0)
+    exc = RateLimitError("rl", retry_after_s=None)
+
+    wait1 = adapter._compute_rate_limit_backoff(exc, 1)
+    wait2 = adapter._compute_rate_limit_backoff(exc, 2)
+    wait3 = adapter._compute_rate_limit_backoff(exc, 3)
+
+    assert wait1 >= 1.0
+    assert wait2 >= 2.0
+    assert wait3 >= 3.0
+
+
+def test_compute_rate_limit_backoff_window_floor_disabled_when_rpm_unset():
+    """When rpm is None / 0 the window floor is disabled; the existing
+    jittered exponential backoff path is preserved unchanged.
+    """
+    adapter = _DummyAdapter([_ok_response(AdapterRequest(prompt="x"))])
+    # _DummyAdapter sets rpm=None so the floor branch must not engage.
+    assert adapter._rate_limiter._rpm is None
+    exc = RateLimitError("rl", retry_after_s=None)
+    wait = adapter._compute_rate_limit_backoff(exc, 3)
+    # Bounded by backoff_max_s; rpm floor would have forced wait >= 3.0.
+    assert wait <= 0.05
+
+
+def test_compute_rate_limit_backoff_honours_retry_after_over_floor():
+    """An explicit Retry-After short-circuits the rate-window floor:
+    when the vendor tells us exactly how long to wait, that wins.
+    """
+    adapter = _RpmDummyAdapter(rpm=60, backoff_max_s=1000.0)
+    exc = RateLimitError("rl", retry_after_s=0.1)
+    wait = adapter._compute_rate_limit_backoff(exc, 5)
+    assert wait == pytest.approx(0.1)
 
 
 # ─── Capabilities declarations ──────────────────────────────────────────

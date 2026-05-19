@@ -276,7 +276,29 @@ class BaseAdapter(abc.ABC):
     def _compute_rate_limit_backoff(
         self, exc: RateLimitError, attempt: int
     ) -> float:
-        """Honour the vendor's Retry-After if any, otherwise fall back to backoff."""
+        """Honour the vendor's Retry-After if any, otherwise fall back to backoff.
+
+        When the vendor supplies a ``Retry-After`` header the adapter
+        sleeps for exactly that duration (capped at ``backoff_max_s``).
+
+        When it does not, the floor of the wait is one full rate-window
+        per retry attempt: ``60.0 / rpm * attempt`` seconds. The
+        intuition: if a 429 fires and the adapter retries inside the
+        same 60s rate-window that the original request consumed,
+        retry-N lands in the SAME budget bucket as retry-N-1 and the
+        backend re-rejects, reinforcing the rate-limit storm. Sleeping
+        for at least one full window per attempt guarantees retry-N
+        lands in retry-N's own fresh budget window.
+
+        The ``backoff_max_s`` cap still applies as the upper bound so
+        the jittered exponential backoff path is preserved when it is
+        already large enough.
+        """
         if exc.retry_after_s is not None and exc.retry_after_s >= 0.0:
             return min(self.backoff_max_s, float(exc.retry_after_s))
-        return self._compute_backoff(attempt)
+        jittered = self._compute_backoff(attempt)
+        rpm = getattr(self._rate_limiter, "_rpm", None)
+        if rpm is None or rpm <= 0:
+            return jittered
+        window_floor = (60.0 / float(rpm)) * max(attempt, 1)
+        return max(jittered, window_floor)
