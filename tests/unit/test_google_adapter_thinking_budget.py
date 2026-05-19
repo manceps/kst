@@ -141,12 +141,16 @@ class TestGoogleAdapterRequestBody(unittest.TestCase):
         self.assertIn("thinkingConfig", gen_cfg)
         self.assertEqual(gen_cfg["thinkingConfig"], {"thinkingBudget": 1024})
 
-    def test_thinking_config_omitted_when_budget_zero(self) -> None:
-        # budget=0 must keep the v1.0.0 wire format intact for
-        # non-thinking models.
+    def test_thinking_config_present_with_zero_when_budget_explicit_zero(self) -> None:
+        # An explicit budget=0 must surface `thinkingConfig.thinkingBudget=0`
+        # on the wire. Some Gemini variants (notably gemini-3.5-flash)
+        # default to thinking-on when the field is omitted entirely; the
+        # only documented way to opt out is to send the zero explicitly.
         a = GoogleAdapter(api_key="x", thinking_budget=0)
         body = self._capture_body(a)
-        self.assertNotIn("thinkingConfig", body["generationConfig"])
+        gen_cfg = body["generationConfig"]
+        self.assertIn("thinkingConfig", gen_cfg)
+        self.assertEqual(gen_cfg["thinkingConfig"], {"thinkingBudget": 0})
 
     def test_max_output_tokens_expanded_by_budget(self) -> None:
         # The plugin's intended visible budget (256) must be preserved
