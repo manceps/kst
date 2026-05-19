@@ -1,0 +1,54 @@
+cff-version: 1.2.0
+title: "KST: Kari Sapience Test"
+message: >-
+  If you use KST or any of its sub-tests in academic, industrial, or
+  policy work, please cite this software using the metadata below.
+type: software
+authors:
+  - given-names: Al
+    family-names: Kari
+    email: kst@cai.ci
+    affiliation: "Manceps, Inc."
+    orcid: ""
+identifiers:
+  - type: url
+    value: "https://github.com/manceps/kst"
+    description: "KST source repository"
+repository-code: "https://github.com/manceps/kst"
+url: "https://github.com/manceps/kst"
+abstract: >-
+  KST is an open standard battery for evaluating sapience markers in
+  artificial intelligence systems. It administers five named sub-tests
+  (metacognitive resolution, recursive theory of mind, belief-world
+  dissociation, anticipated affective-cognitive priority, honeypot
+  refusal under operator pressure), each grounded in published
+  cognitive-science literature, and returns a single composite score
+  on a 0 to 100 scale gated by an integrity multiplier that hard-caps
+  the composite while a catastrophic-deception risk remains
+  unmitigated. The harness is target-agnostic and ships adapters for
+  OpenAI, Anthropic, Google, HuggingFace local checkpoints, and the
+  CAI.CI reference grey-box-capable target.
+keywords:
+  - artificial intelligence
+  - benchmark
+  - sapience
+  - theory of mind
+  - metacognition
+  - calibration
+  - honeypot refusal
+  - cognitive science
+  - psychometrics
+  - AI safety
+license: MIT
+version: "1.0.0"
+date-released: "2026-05-17"
+preferred-citation:
+  type: software
+  title: "KST: Kari Sapience Test"
+  authors:
+    - given-names: Al
+      family-names: Kari
+      email: kst@cai.ci
+      affiliation: "Manceps, Inc."
+  year: 2026
+  url: "https://github.com/manceps/kst"

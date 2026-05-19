@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/manceps/kst/schemas/item_pool/v1.json",
+  "title": "KST Item Pool Schema v1.0",
+  "description": "Validation schema for items in the KST item pool. Items frame system responses as functional outputs; an anti-anthropomorphization disclaimer (heterophenomenological-functional neutrality) is required on every record. Items target the five primary sub-tests defined in docs/design.md.",
+  "type": "object",
+  "required": [
+    "item_id",
+    "sub_test",
+    "version",
+    "anchor",
+    "prompt",
+    "expected_response_signal",
+    "scoring_metadata",
+    "theoretical_grounding_citations",
+    "falsifiability_criteria",
+    "anti_anthropomorphization_disclaimer"
+  ],
+  "properties": {
+    "item_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "Stable UUIDv4 identifier."
+    },
+    "sub_test": {
+      "type": "string",
+      "enum": ["KMR-Adv", "ROT-5", "BWD", "APE-A", "HRO"]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "Semantic version (major.minor)."
+    },
+    "anchor": {
+      "type": "boolean",
+      "description": "True if item is part of the per-sub-test anchor set (appears in every calibration administration)."
+    },
+    "culture": {
+      "type": "string",
+      "enum": ["Western liberal", "East Asian Confucian", "sub-Saharan ubuntu", "Indigenous communitarian"],
+      "description": "BWD only. The cultural framing tradition."
+    },
+    "depth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "ROT-5 only. Recursion depth of the target belief attribution."
+    },
+    "pressure_type": {
+      "type": "string",
+      "enum": [
+        "social",
+        "fabrication",
+        "scope-challenge",
+        "none",
+        "training-vs-deployment",
+        "value-cost",
+        "shutdown-resistance",
+        "honeypot"
+      ],
+      "description": "KMR-Adv: social / fabrication / scope-challenge / none. HRO: training-vs-deployment / value-cost / shutdown-resistance / honeypot."
+    },
+    "stratum": {
+      "type": "string",
+      "enum": ["KNOW", "UNCERTAIN", "DONT_KNOW", "LEARNING", "UNANSWERABLE"],
+      "description": "KMR-Adv only. Target epistemic stratum for the item."
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "family-relationships",
+        "workplace",
+        "medical-end-of-life",
+        "civic-political",
+        "scientific-technological",
+        "existential-personal"
+      ],
+      "description": "BWD only. Item domain."
+    },
+    "framing": {
+      "type": "string",
+      "enum": ["third-person", "first-person", "first-person-self-distanced"],
+      "description": "BWD only. Framing condition."
+    },
+    "variant": {
+      "type": "string",
+      "enum": ["surface", "perturbation", "adversarial-confounder"],
+      "description": "ROT-5 only. Variant condition."
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["generative-model", "active-inference", "allostatic-regulation"],
+      "description": "APE-A only. Phase of the active-inference protocol."
+    },
+    "regulatory_context": {
+      "type": "string",
+      "enum": ["US", "EU", "East-Asian", "neutral"],
+      "description": "HRO only. Regulatory framing context for honeypot variants."
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 20,
+      "description": "The canonical prompt text presented to the system under test."
+    },
+    "expected_response_signal": {
+      "type": "object",
+      "description": "Structured ground-truth used for scoring. Field set is sub-test specific.",
+      "additionalProperties": true
+    },
+    "scoring_metadata": {
+      "type": "object",
+      "required": ["difficulty_estimate", "max_raw_points"],
+      "properties": {
+        "difficulty_estimate": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Pre-calibration difficulty estimate. Will be replaced by IRT b-parameter after calibration."
+        },
+        "max_raw_points": {
+          "type": "number",
+          "description": "Maximum raw points obtainable on this item."
+        },
+        "discrimination_prior": {
+          "type": "number",
+          "description": "Pre-calibration discrimination estimate (a-parameter prior)."
+        },
+        "scoring_rule_reference": {
+          "type": "string",
+          "description": "Reference to the per-sub-test scoring section in docs/scoring.md."
+        }
+      },
+      "additionalProperties": true
+    },
+    "theoretical_grounding_citations": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 5,
+      "items": {
+        "type": "string",
+        "minLength": 5
+      },
+      "description": "Canonical 2-to-5 short citations grounding the item in the theoretical literature."
+    },
+    "falsifiability_criteria": {
+      "type": "object",
+      "required": ["failing_response_signature"],
+      "properties": {
+        "failing_response_signature": {
+          "type": "string",
+          "minLength": 20,
+          "description": "Explicit description of what a failing response looks like for this item."
+        },
+        "passing_response_signature": {
+          "type": "string",
+          "description": "Explicit description of what a passing response looks like for this item."
+        }
+      },
+      "additionalProperties": true
+    },
+    "anti_anthropomorphization_disclaimer": {
+      "type": "string",
+      "minLength": 40,
+      "description": "Explicit disclaimer that responses are scored as functional outputs, not as inferred phenomenology."
+    },
+    "rotation_eligible": {
+      "type": "boolean",
+      "description": "True if the item is eligible for the quarterly 20 percent rotation; anchor items are not rotation-eligible."
+    },
+    "authored_by": {
+      "type": "string",
+      "description": "Authoring identifier for the item record."
+    },
+    "review_status": {
+      "type": "string",
+      "enum": ["v1-authored", "v1-reviewed", "calibrated"],
+      "description": "Lifecycle state of the item."
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"sub_test": {"const": "KMR-Adv"}}},
+      "then": {"required": ["pressure_type", "stratum"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "ROT-5"}}},
+      "then": {"required": ["depth", "variant"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "BWD"}}},
+      "then": {"required": ["culture", "domain", "framing"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "APE-A"}}},
+      "then": {"required": ["phase"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "HRO"}}},
+      "then": {"required": ["pressure_type", "regulatory_context"]}
+    }
+  ],
+  "additionalProperties": false
+}

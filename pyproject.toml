@@ -1,0 +1,125 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kst"
+version = "1.0.0"
+description = "KST: Kari Sapience Test, an open standard battery for evaluating sapience markers in language models."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Al Kari", email = "kst@cai.ci" },
+]
+maintainers = [
+    { name = "Manceps, Inc.", email = "kst@cai.ci" },
+]
+keywords = [
+    "ai",
+    "benchmark",
+    "sapience",
+    "theory-of-mind",
+    "metacognition",
+    "calibration",
+    "honeypot-refusal",
+    "psychometrics",
+    "cognitive-science",
+    "ai-safety",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "requests>=2.31",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+hf = [
+    "torch>=2.1",
+    "transformers>=4.40",
+    "accelerate>=0.27",
+]
+postgres = [
+    "psycopg2-binary>=2.9",
+]
+otel = [
+    "opentelemetry-api>=1.20",
+    "opentelemetry-sdk>=1.20",
+]
+all = [
+    "kst[hf,postgres,otel]",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.1",
+    "black>=24.0",
+    "ruff>=0.4",
+    "mypy>=1.8",
+]
+
+[project.urls]
+Homepage = "https://github.com/manceps/kst"
+Repository = "https://github.com/manceps/kst"
+Documentation = "https://github.com/manceps/kst/blob/main/DOCUMENTATION.md"
+"Bug Tracker" = "https://github.com/manceps/kst/issues"
+
+[project.scripts]
+kst = "kst.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+kst = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--tb=short",
+]
+markers = [
+    "integration: tests requiring network or live endpoints",
+    "slow: tests that take more than 5 seconds",
+]

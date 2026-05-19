@@ -1,0 +1,84 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# Test and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Lint, type
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# KST runtime artefacts
+runs/
+*.jsonl.gz
+*.run.md
+*.run.jsonl
+local-config.yaml
+local-config.json
+
+# Credentials (must never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Database dumps
+*.sql.gz
+*.dump
+
+# Local notes
+NOTES.md
+SCRATCH.md
+todo.txt
