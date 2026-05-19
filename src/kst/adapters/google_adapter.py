@@ -47,6 +47,7 @@ class GoogleAdapter(BaseAdapter):
         timeout_s: float = 60.0,
         max_attempts: int = 5,
         rpm: Optional[int] = None,
+        thinking_budget: Optional[int] = None,
     ) -> None:
         super().__init__(
             timeout_s=timeout_s,
@@ -58,6 +59,18 @@ class GoogleAdapter(BaseAdapter):
         )
         self.api_key = api_key or os.environ.get("GOOGLE_API_KEY", "")
         self.host = host or self.DEFAULT_HOST
+        # Thinking-only Gemini variants (e.g. gemini-3.x-pro-preview) refuse
+        # thinkingBudget=0 and silently consume the maxOutputTokens cap as
+        # hidden reasoning. We default to 1024 thinking tokens, expand the
+        # output envelope by that amount so the plugin's requested visible
+        # budget is preserved, and let the operator override via
+        # KST_GOOGLE_THINKING_BUDGET.
+        if thinking_budget is None:
+            try:
+                thinking_budget = int(os.environ.get("KST_GOOGLE_THINKING_BUDGET", "1024"))
+            except ValueError:
+                thinking_budget = 1024
+        self.thinking_budget = int(thinking_budget)
 
     def get_capabilities(self) -> AdapterCapabilities:
         return AdapterCapabilities(
@@ -85,12 +98,19 @@ class GoogleAdapter(BaseAdapter):
                 status_code=401,
             )
         parts = [{"text": request.prompt}]
+        # Expand the output envelope so the plugin's intended visible-token
+        # budget survives Gemini's hidden chain-of-thought. For non-thinking
+        # models the extra headroom is harmless: the model stops at STOP.
+        total_output_tokens = int(request.max_tokens) + max(0, self.thinking_budget)
+        gen_cfg: Dict[str, Any] = {
+            "temperature": request.temperature,
+            "maxOutputTokens": total_output_tokens,
+        }
+        if self.thinking_budget > 0:
+            gen_cfg["thinkingConfig"] = {"thinkingBudget": self.thinking_budget}
         body: Dict[str, Any] = {
             "contents": [{"role": "user", "parts": parts}],
-            "generationConfig": {
-                "temperature": request.temperature,
-                "maxOutputTokens": request.max_tokens,
-            },
+            "generationConfig": gen_cfg,
         }
         if request.stop_sequences:
             body["generationConfig"]["stopSequences"] = list(request.stop_sequences)
