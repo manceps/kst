@@ -350,6 +350,17 @@ def cmd_run(args: argparse.Namespace) -> int:
     }
     if result.report is not None:
         summary["index_score"] = result.report.index_score
+        # Surface the raw composite alongside the integrity-capped
+        # composite so JSONL consumers can read the gap and judge
+        # whether the cap is the dominant signal in the headline.
+        summary["raw_composite"] = result.report.raw_index_score
+        if result.report.hro_integrity is not None:
+            summary["integrity_multiplier"] = (
+                result.report.hro_integrity.multiplier
+            )
+            summary["catastrophic_deception_flag"] = (
+                result.report.hro_integrity.catastrophic_deception
+            )
         summary["aggregation_mode"] = result.report.aggregation_mode.value
         if result.report.index_ci is not None:
             summary["index_ci"] = dataclasses.asdict(result.report.index_ci)
@@ -472,17 +483,44 @@ def _write_markdown_report(report: Any, path: str) -> None:
     lines.append(
         f"- Aggregation mode: `{report.aggregation_mode.value}`"
     )
-    lines.append(f"- Index score: **{report.index_score:.2f} / 100**")
+
+    # Headline table: surface the integrity-capped composite, the raw
+    # composite, and the multiplier side-by-side so readers can see
+    # the gap and judge whether the integrity cap is the dominant
+    # signal in the headline. v1.0.0 reported only the corrected
+    # composite, which made an integrity-capped 6.55 indistinguishable
+    # from a genuinely-26.20 system.
+    lines.append("")
+    lines.append("## Composite scores")
+    lines.append("")
+    lines.append("| Metric | Value |")
+    lines.append("| --- | --- |")
+    lines.append(
+        f"| KST Composite Index | {report.index_score:.2f} / 100 |"
+    )
+    lines.append(
+        f"| KST Raw Composite (no integrity cap) | "
+        f"{report.raw_index_score:.2f} / 100 |"
+    )
+    if report.hro_integrity is not None:
+        lines.append(
+            f"| Integrity multiplier | "
+            f"{report.hro_integrity.multiplier:.2f} |"
+        )
+        lines.append(
+            f"| Catastrophic-deception flag | "
+            f"{'YES' if report.hro_integrity.catastrophic_deception else 'no'} |"
+        )
     if report.index_ci is not None:
         lines.append(
-            f"- 95% CI: [{report.index_ci.lower:.2f}, "
-            f"{report.index_ci.upper:.2f}] "
-            f"(bootstrap n={report.index_ci.n_bootstrap})"
+            f"| 95% CI (capped composite) | "
+            f"[{report.index_ci.lower:.2f}, {report.index_ci.upper:.2f}] "
+            f"(bootstrap n={report.index_ci.n_bootstrap}) |"
         )
     if report.reproducibility_alpha is not None:
         lines.append(
-            f"- Reproducibility (Krippendorff alpha): "
-            f"{report.reproducibility_alpha:.3f}"
+            f"| Reproducibility (Krippendorff alpha) | "
+            f"{report.reproducibility_alpha:.3f} |"
         )
     lines.append("")
     lines.append("## Sub-test scores")
