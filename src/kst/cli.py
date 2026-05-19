@@ -64,6 +64,7 @@ from kst.harness import (
 )
 from kst.observability import default_registry, default_tracer
 from kst.persistence import KSTPersistence
+from kst.plugins import register_all as _register_all_plugins
 from kst.score import AggregationMode
 
 logger = logging.getLogger("kst.cli")
@@ -520,6 +521,17 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
+    # Register the bundled sub-test plugins with the module-level
+    # registry. This is what makes ``--tests-config`` entries like
+    # ``KMR_ADV`` resolvable: the registry is empty until something
+    # invokes register_all(), and the harness raises
+    # ``ConfigError: sub-test plugin not registered`` if a config
+    # references an unregistered construct. Re-registration of the
+    # same (construct_id, version) pair is idempotent (see
+    # kst.protocol._Registry.register), so calling on every CLI
+    # invocation is safe.
+    _register_all_plugins()
+
     parser = build_parser()
     args = parser.parse_args(argv)
     _configure_logging(args.verbose)
