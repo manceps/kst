@@ -20,7 +20,7 @@ Connection management follows the canonical pattern in
 mode auto-detect when ``CAICI_DB_PASSWORD`` is empty. Schema bootstrap
 is idempotent ``CREATE TABLE IF NOT EXISTS``.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations

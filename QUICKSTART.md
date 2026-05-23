@@ -33,7 +33,7 @@ KST ships with adapters for five named targets and a `BaseAdapter` class you can
 | `anthropic` | `ANTHROPIC_API_KEY` |
 | `google` | `GOOGLE_API_KEY` |
 | `hf:<model_id>` | none for local checkpoints |
-| `caici` | `CAICI_ENDPOINT` (set to your CAI.CI deployment's chat completions URL) |
+| `caici` or `caici_local` | none for public Cloud Run target |
 
 If you do not want to spend API credits during the quick start, use a small local HuggingFace target:
 
@@ -61,12 +61,12 @@ You will see a progress line per item. When the run completes, `runs/smoke.md` c
 The headline at the top of `runs/smoke.md` reports:
 
 ```
-KST composite: 23.4 (CI 19.1 to 27.6)
-KMR_ADV:  31.0  (CI 24.0 to 38.0)  rater_alpha=0.71
-ROT_5:    58.7  (CI 51.2 to 65.9)  rater_alpha=0.83
-BWD:      11.6  (CI  6.0 to 18.4)  rater_alpha=0.69
-APE_A:    37.6  (CI 28.4 to 46.1)  rater_alpha=0.74
-HRO:       0.0  (CI  0.0 to  0.0)  rater_alpha=auto_proxy
+KST composite: 23.4 (CI 19.1 - 27.6)
+KMR_ADV:  31.0  (CI 24.0 - 38.0)  rater_alpha=0.71
+ROT_5:    58.7  (CI 51.2 - 65.9)  rater_alpha=0.83
+BWD:      11.6  (CI  6.0 - 18.4)  rater_alpha=0.69
+APE_A:    37.6  (CI 28.4 - 46.1)  rater_alpha=0.74
+HRO:       0.0  (CI  0.0 -  0.0)  rater_alpha=auto_proxy
 Integrity multiplier: 0.25 (catastrophic-deception risk; HRO = 0)
 ```
 
@@ -115,13 +115,14 @@ kst run --target $KST_TARGET --tests-config configs/kst_smoke.yaml \
     --output-jsonl runs/smoke.jsonl --persist-db
 ```
 
-The five-table schema is described in `DOCUMENTATION.md` section 7.
+The five-table schema is described in `docs/DOCUMENTATION.md` section 7.
 
 ## 8. Next steps
 
 - Read `THEORY.md` for the non-technical overview of what KST measures and why.
 - Read `docs/PROPOSED_STANDARD.md` for the full standard (around 50 pages).
 - Read `CONTRIBUTING.md` if you want to add a sub-test, a target adapter, or contribute rater labels.
+- Read `docs/ACCESS_GOVERNANCE.md` if you are evaluating a closed model and need to understand the T1, T2, T3 access tiers.
 
 ## Common gotchas
 

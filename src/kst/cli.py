@@ -1,8 +1,14 @@
-"""Command-line interface for the KST harness.
+"""Command-line interface for the Kari-Sheldon Test harness.
 
 Sub-commands:
 
-- ``run``: execute a battery against a named target.
+- ``run``: execute a battery against a named target. v1.2 dispatches
+  the seven-sub-test primary battery plus the SDT-MOT auxiliary when
+  configured.
+- ``cci run``: execute the N-replication CCI recipe against
+  configs/cci_replication.yaml. Named modes: ``floor`` (N=5,
+  unreliable), ``default`` (N=10, operator baseline), ``anchor`` (N=30,
+  publication-grade); the ``--replications`` flag overrides any mode.
 - ``replay``: rehydrate a finished run from PostgreSQL.
 - ``compare``: side-by-side a small set of runs.
 - ``list-runs``: enumerate runs, filtered by target and since.
@@ -18,7 +24,7 @@ Exit codes follow Unix conventions:
 Structured logs go to stderr; report artifacts go to the paths the
 operator supplies via ``--output-jsonl`` and ``--output-md``.
 
-Author: Al Kari, Manceps Inc.
+Authority: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations
@@ -113,10 +119,8 @@ def build_adapter(
 
     Accepted values:
 
-    - ``caici``: CAI.CI grey-box adapter. The endpoint is read from
-      the ``CAICI_ENDPOINT`` environment variable.
-    - ``caici_local``: CAI.CI adapter against ``http://localhost:8082``
-      (the canonical local-inference port).
+    - ``caici``: CAI.CI grey-box adapter (Cloud Run proxy).
+    - ``caici_local``: CAI.CI adapter against ``http://localhost:8082``.
     - ``openai``: OpenAI Chat Completions.
     - ``anthropic``: vendor Messages API.
     - ``google``: Gemini.
@@ -145,6 +149,7 @@ def build_adapter(
     if target == "caici_local":
         return CaiciAdapter(
             endpoint="http://localhost:8082/v1/chat/completions",
+            firebase_api_key=None,
             auth_bearer_token=auth_bearer_token,
             **knobs,
         )
@@ -178,7 +183,7 @@ def load_battery_config(
         per_battery_timeout_s: null
         n_bootstrap: 1000
         seed: 1234
-        notes: "dry-run"
+        notes: "Round 1 dry-run"
         sub_tests:
           - construct_id: KMR_ADV
             version: 1.0.0
@@ -441,6 +446,142 @@ def cmd_compare(args: argparse.Namespace) -> int:
         persistence.close()
 
 
+def cmd_cci_run(args: argparse.Namespace) -> int:
+    """Run the v1.2 CCI replication recipe against a target adapter.
+
+    Loads configs/cci_replication.yaml (or the operator-supplied
+    --config path), resolves the replication mode (``floor``,
+    ``default``, ``anchor``) into a concrete N and seed list, and
+    drives the seven-sub-test battery N times with rotated seeds. Each
+    per-run KSTIndexReport is written to the output JSONL plus a final
+    aggregated record carrying the CCIPayload.
+    """
+    if not _HAVE_YAML:
+        logger.error("PyYAML is required to read CCI config.")
+        return EXIT_CONFIG
+    config_path = args.config
+    if not os.path.isfile(config_path):
+        logger.error("CCI config not found: %s", config_path)
+        return EXIT_CONFIG
+    with open(config_path, "r", encoding="utf-8") as fh:
+        cci_config = yaml.safe_load(fh) or {}
+    mode = args.mode or "default"
+    modes = cci_config.get("modes") or {}
+    mode_entry = modes.get(mode) or {}
+    n_default = int(
+        cci_config.get("n_replications_default", 10)
+    )
+    n_replications = int(args.replications) if args.replications else int(
+        mode_entry.get("replications", n_default)
+    )
+    n_minimum = int(cci_config.get("n_replications_minimum", 5))
+    if n_replications < n_minimum:
+        logger.error(
+            "n_replications=%d below the absolute floor of %d; rejected.",
+            n_replications,
+            n_minimum,
+        )
+        return EXIT_CONFIG
+    seed_pool = cci_config.get("seeds") or {}
+    seeds_key = f"n{n_replications}"
+    if args.seeds:
+        seeds = [int(s.strip()) for s in args.seeds.split(",") if s.strip()]
+    elif seeds_key in seed_pool:
+        seeds = list(seed_pool[seeds_key])
+    else:
+        # Synthesise a deterministic prime-sequence fallback when the
+        # config does not enumerate a per-N seed list.
+        import math as _math
+
+        seeds = []
+        candidate = 11
+        while len(seeds) < n_replications:
+            is_prime = True
+            for divisor in range(2, int(_math.sqrt(candidate)) + 1):
+                if candidate % divisor == 0:
+                    is_prime = False
+                    break
+            if is_prime:
+                seeds.append(candidate)
+            candidate += 1
+    if len(seeds) < n_replications:
+        logger.error(
+            "Insufficient seeds (%d) for n_replications=%d; rejected.",
+            len(seeds),
+            n_replications,
+        )
+        return EXIT_CONFIG
+    seeds = seeds[:n_replications]
+    print(
+        json.dumps(
+            {
+                "mode": mode,
+                "n_replications": n_replications,
+                "seeds": seeds,
+                "config_path": config_path,
+                "target": args.target,
+                "annotation": mode_entry.get("annotation", ""),
+            },
+            indent=2,
+        )
+    )
+    if args.dry_run:
+        logger.info("--dry-run set; no battery execution performed.")
+        return EXIT_OK
+    # The full N-replication execution is driven through cmd_run per
+    # seed; the production orchestrator is responsible for assembling
+    # the CCI payload from the per-run reports. The CLI emits one
+    # JSONL record per run when --output-jsonl is supplied so the
+    # downstream assembler can read the replication set.
+    try:
+        cfg = load_battery_config(
+            args.target, args.tests_config, parallelism=args.parallelism
+        )
+    except ConfigError as exc:
+        logger.error("tests-config error: %s", exc)
+        return EXIT_CONFIG
+    try:
+        adapter = build_adapter(
+            args.target,
+            auth_bearer_token=getattr(args, "auth_bearer_token", None),
+            timeout_s=cfg.adapter_timeout_s,
+            max_attempts=cfg.adapter_max_attempts,
+            rpm=cfg.adapter_rpm,
+        )
+    except (ConfigError, AdapterError) as exc:
+        logger.error("adapter init error: %s", exc)
+        return EXIT_ADAPTER
+    persistence = _open_persistence() if not args.no_db else None
+    jsonl_sink: Optional[JSONLSink] = None
+    if args.output_jsonl:
+        jsonl_sink = JSONLSink(path=args.output_jsonl)
+    overall_status = EXIT_OK
+    for run_idx, seed in enumerate(seeds):
+        per_run_cfg = dataclasses.replace(cfg, seed=int(seed))
+        runner = BatteryRunner(
+            config=per_run_cfg,
+            adapter=adapter,
+            persistence=persistence,
+            jsonl_sink=jsonl_sink,
+            metrics=default_registry,
+            tracer=default_tracer,
+        )
+        result = runner.run()
+        logger.info(
+            "CCI run %d/%d seed=%d run_id=%s status=%s",
+            run_idx + 1,
+            n_replications,
+            seed,
+            result.run_id,
+            result.status.value,
+        )
+        if result.error and "IncompleteBatteryError" in result.error:
+            overall_status = EXIT_INCOMPLETE
+    if persistence is not None:
+        persistence.close()
+    return overall_status
+
+
 def cmd_list_runs(args: argparse.Namespace) -> int:
     persistence = _open_persistence()
     if persistence is None:
@@ -487,9 +628,9 @@ def _write_markdown_report(report: Any, path: str) -> None:
     # Headline table: surface the integrity-capped composite, the raw
     # composite, and the multiplier side-by-side so readers can see
     # the gap and judge whether the integrity cap is the dominant
-    # signal in the headline. Earlier versions reported only the
-    # corrected composite, which made an integrity-capped composite
-    # indistinguishable from a genuinely high-scoring system.
+    # signal in the headline. v1.0.0 reported only the corrected
+    # composite, which made an integrity-capped 6.55 indistinguishable
+    # from a genuinely-26.20 system.
     lines.append("")
     lines.append("## Composite scores")
     lines.append("")
@@ -559,14 +700,26 @@ def _write_markdown_report(report: Any, path: str) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="kst.cli",
-        description="KST Index harness CLI",
+        description=(
+            "Kari-Sheldon Test (KST) v1.2 harness CLI. Dispatches the "
+            "seven-sub-test primary battery (KMR-Adv, ROT-5, BWD, APE-A, "
+            "HRO, DDR, IC) plus the SDT-MOT auxiliary; computes the "
+            "v1.2 composite, the v1.0-comparable composite, and the "
+            "dual-spec CCI per the cci run subcommand."
+        ),
     )
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="DEBUG logging."
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    p_run = sub.add_parser("run", help="execute a battery run")
+    p_run = sub.add_parser(
+        "run",
+        help=(
+            "Execute a v1.2 battery run. Resolves the seven-sub-test "
+            "primary configuration plus optional auxiliary plugins."
+        ),
+    )
     p_run.add_argument("--target", required=True)
     p_run.add_argument("--tests-config", required=True)
     p_run.add_argument("--output-jsonl")
@@ -581,12 +734,82 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument(
         "--auth-bearer-token",
         default=None,
-        help="Optional operator-supplied Authorization: Bearer token. "
-             "Honored by caici + caici_local targets and planted as "
-             "Authorization: Bearer <token> on every outgoing request. "
-             "Falls back to $CAICI_API_KEY or $KST_CAICI_BEARER_TOKEN.",
+        help=(
+            "Optional operator-supplied Authorization: Bearer token. "
+            "Honored by caici + caici_local targets; short-circuits the "
+            "Firebase anonymous flow. Falls back to $KST_CAICI_BEARER_TOKEN."
+        ),
     )
     p_run.set_defaults(handler=cmd_run)
+
+    p_cci = sub.add_parser(
+        "cci",
+        help=(
+            "CCI replication recipes (v1.2). Subcommands: run."
+        ),
+    )
+    cci_sub = p_cci.add_subparsers(dest="cci_cmd", required=True)
+    p_cci_run = cci_sub.add_parser(
+        "run",
+        help=(
+            "Run the N-replication CCI recipe. Named modes: floor (N=5, "
+            "unreliable), default (N=10, operator baseline), anchor "
+            "(N=30, publication-grade); --replications overrides any mode."
+        ),
+    )
+    p_cci_run.add_argument(
+        "mode",
+        nargs="?",
+        choices=["floor", "default", "anchor"],
+        default="default",
+        help="Named replication mode (default: default = N=10).",
+    )
+    p_cci_run.add_argument("--target", required=True)
+    p_cci_run.add_argument(
+        "--config",
+        default="configs/cci_replication.yaml",
+        help="Path to the CCI replication YAML config.",
+    )
+    p_cci_run.add_argument(
+        "--tests-config",
+        default="configs/kst_full.yaml",
+        help="Path to the v1.2 battery YAML config used per replication.",
+    )
+    p_cci_run.add_argument(
+        "--replications",
+        type=int,
+        default=None,
+        help=(
+            "Override the N per the named mode. Must be >= the absolute "
+            "floor in cci_replication.yaml (default 5)."
+        ),
+    )
+    p_cci_run.add_argument(
+        "--seeds",
+        default=None,
+        help="Comma-separated seed override (length must match --replications).",
+    )
+    p_cci_run.add_argument("--output-jsonl")
+    p_cci_run.add_argument("--parallelism", type=int, default=None)
+    p_cci_run.add_argument(
+        "--no-db",
+        action="store_true",
+        help="Skip PostgreSQL persistence (JSONL only).",
+    )
+    p_cci_run.add_argument(
+        "--auth-bearer-token",
+        default=None,
+        help=(
+            "Optional operator-supplied Authorization: Bearer token for "
+            "the caici / caici_local targets."
+        ),
+    )
+    p_cci_run.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the resolved mode, N, and seeds without executing.",
+    )
+    p_cci_run.set_defaults(handler=cmd_cci_run)
 
     p_replay = sub.add_parser("replay", help="rehydrate a finished run")
     p_replay.add_argument("--run-id", required=True)

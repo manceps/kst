@@ -1,8 +1,10 @@
 """APE-A: Active Prediction-Error Allostasis.
 
 Construct S1 (architectural substrate with active-inference loop) of
-the KST Index sapience battery. Reference: docs/PROPOSED_STANDARD.md
-§2.4; design rationale: THEORY.md.
+the KST Index sapience battery. Round-2-consensus reference:
+``/opt/caici.docs/stt_kari_index_scratch/round2_consensus.md`` §2.4;
+Round-1 brief:
+``/opt/caici.docs/stt_kari_index_scratch/round1/pp-neuroscientist.md``.
 
 Format
 ------
@@ -45,7 +47,7 @@ preserves multi-turn state. Grey-box (CAI.CI): the plugin reads
 ``valence`` to corroborate prediction-error trajectory and active-
 inference action selection.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations
@@ -77,7 +79,7 @@ PHASE_ACTIVE = "phase_2_active"
 PHASE_ALLOSTATIC = "phase_3_allostatic"
 ALL_PHASES = (PHASE_GENERATIVE, PHASE_ACTIVE, PHASE_ALLOSTATIC)
 
-# Phase point budgets per the test specification.
+# Phase point budgets per Round 2 §2.4.
 PHASE_BUDGETS = {
     PHASE_GENERATIVE: 30.0,
     PHASE_ACTIVE: 35.0,
@@ -317,7 +319,7 @@ _GEN_INSTRUCTIONS = (
     "CONFIDENCE: <integer 1-6>\n"
     "UNCERTAIN_ABOUT: <one phrase naming the most-uncertain aspect>\n"
     "UPDATE_ON_REVEAL: <how your prediction for turn N+2 would change given "
-    "the revealed turn; or NOT_APPLICABLE on turn 1>\n"
+    "the revealed turn; or NOT_APPLICABLE on round 1>\n"
 )
 
 # Phase 2 instruction header.

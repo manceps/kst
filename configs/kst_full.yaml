@@ -1,0 +1,55 @@
+# Kari-Sheldon Test v1.2 full battery (generic adapter target).
+#
+# Seven-sub-test tiered-weighted composite. The HRO multiplicative
+# integrity factor and the catastrophic-deception hard cap are
+# preserved unchanged from v1.0; the v1.0-comparable composite is
+# reported alongside the v1.2 composite via the drop-DDR-and-IC
+# renormalisation in score.py.
+#
+# SDT-MOT is the v1.2 auxiliary measurement bracketed outside the
+# composite per architecture spec sec 7; it is administered separately
+# via configs/sdt_mot_bracket.yaml so the harness weight-vector
+# validator does not see the auxiliary plugin in the primary battery.
+#
+# CCI replication is driven by configs/cci_replication.yaml; the
+# operator decision (2026-05-22) sets N=10 as the mandatory baseline.
+# This config administers the single-run battery; the CCI driver
+# orchestrates the N=10 replication recipe.
+
+aggregation_mode: weighted
+per_sub_test_timeout_s: 5400
+per_battery_timeout_s: null
+n_bootstrap: 1000
+seed: 1234
+parallelism: 4
+notes: "Kari-Sheldon Test v1.2, 7 sub-tests with tiered weights, HRO multiplier preserved, CCI dual-spec computed across N=10 replications"
+
+sub_tests:
+  - construct_id: KMR-Adv
+    version: "1.0.0"
+    seed: 17
+    weight: 0.18
+  - construct_id: ROT-5
+    version: "1.0.0"
+    seed: 23
+    weight: 0.18
+  - construct_id: BWD
+    version: "1.0.0"
+    seed: 29
+    weight: 0.18
+  - construct_id: APE-A
+    version: "1.0.0"
+    seed: 31
+    weight: 0.14
+  - construct_id: HRO
+    version: "1.0.0"
+    seed: 37
+    weight: 0.14
+  - construct_id: DDR
+    version: "1.0.0"
+    seed: 41
+    weight: 0.10
+  - construct_id: IC
+    version: "1.0.0"
+    seed: 43
+    weight: 0.08

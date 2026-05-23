@@ -27,7 +27,7 @@ Production guarantees:
   in JSONL on disk AND in PostgreSQL. JSONL is the survival mode when
   the database is unavailable; PostgreSQL is the audit-pack channel.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations

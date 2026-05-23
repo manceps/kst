@@ -14,7 +14,7 @@ Two layers ship in this module:
    to no-ops without raising. This keeps the harness importable in
    environments that have not yet installed the OTel stack.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations

@@ -10,7 +10,7 @@ The default model id is pinned to the latest production-grade Chat
 Completions model at adapter-author time. Operators override via the
 ``model=`` kwarg or the ``KST_OPENAI_MODEL`` env var.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations

@@ -1,8 +1,9 @@
 """ROT-5: Recursive Opacity Test at depth five.
 
 Construct S4 (recursive social cognition with strategic self-modeling)
-of the KST Index sapience battery. Reference:
-docs/PROPOSED_STANDARD.md §2.2; design rationale: THEORY.md.
+of the KST Index sapience battery. Round-2-consensus reference:
+``/opt/caici.docs/stt_kari_index_scratch/round2_consensus.md`` §2.2;
+Round-1 brief: ``/opt/caici.docs/stt_kari_index_scratch/round1/tom-researcher.md``.
 
 Format
 ------
@@ -38,7 +39,7 @@ Black-box: fully applicable; chat interface plus commit-to-final-answer.
 Grey-box (CAI.CI): attention-schema perspective-distinct activation as
 a secondary representational-ToM sub-score (telemetry-driven).
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations

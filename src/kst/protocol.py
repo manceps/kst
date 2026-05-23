@@ -11,9 +11,9 @@ offending field; production never tolerates a partially-implemented
 plugin slipping into a battery.
 
 The harness CORE ships zero plugins. Sub-test implementations land as
-follow-on engagements once their construct specifications converge.
+follow-on engagements once the Round 2 research synthesis converges.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations
@@ -61,6 +61,19 @@ class SubTestProtocol(Protocol):
       a sequence of them. ``BOTH`` means the test runs against any
       adapter; ``BLACK_BOX`` / ``GREY_BOX`` restricts to that class.
 
+    Optional attributes (read with safe defaults by the harness):
+
+    - ``auxiliary`` (bool, default False): when True, the plugin is an
+      auxiliary measurement bracketed outside the 0-to-100 composite.
+      Auxiliary plugins (currently SDT-MOT) are reported in a separate
+      section of the score report; the aggregator excludes them from the
+      weighted composite per v1.2 architecture spec §3 and §7.
+    - ``multi_turn_dispatch`` (bool, default False): when True, the
+      plugin's items embed a multi-turn protocol that requires the
+      adapter to expose ``run_multi_turn_dispatch(prompts)``. Single-turn
+      plugins leave this False and the harness drives them with the
+      ordinary one-shot adapter path.
+
     Required methods (validated by :func:`validate_plugin`):
 
     - ``get_name() -> str``
@@ -74,6 +87,8 @@ class SubTestProtocol(Protocol):
     theoretical_grounding: List[str]
     falsifiability_criteria: List[str]
     applicability_modes: Any  # ApplicabilityMode or Sequence[ApplicabilityMode]
+    auxiliary: bool
+    multi_turn_dispatch: bool
 
     def get_name(self) -> str: ...
 
@@ -246,6 +261,30 @@ def validate_plugin(plugin: Any) -> None:
             )
 
 
+def is_auxiliary_plugin(plugin: Any) -> bool:
+    """Return True iff the plugin is an auxiliary measurement.
+
+    Auxiliary plugins are bracketed outside the 0-to-100 composite per
+    v1.2 architecture spec §3 and §7. The aggregator inspects this flag
+    to decide whether a plugin's score contributes to the weighted
+    composite. A plugin that omits the ``auxiliary`` attribute is
+    treated as primary (the v1.0 plugins predate the flag).
+    """
+    return bool(getattr(plugin, "auxiliary", False))
+
+
+def requires_multi_turn_dispatch(plugin: Any) -> bool:
+    """Return True iff the plugin requires multi-turn adapter dispatch.
+
+    Plugins that set ``multi_turn_dispatch = True`` (currently DDR's
+    three-turn protocol) require the adapter to expose the
+    ``run_multi_turn_dispatch(prompts)`` entry point. Single-turn
+    plugins leave the flag at its default False and the harness drives
+    them with the ordinary one-shot adapter path.
+    """
+    return bool(getattr(plugin, "multi_turn_dispatch", False))
+
+
 class _Registry:
     """Thread-safe registry of validated sub-test plugins keyed by (construct_id, version).
 
@@ -309,6 +348,21 @@ class _Registry:
         with self._lock:
             return list(self._items.values())
 
+    def primary_plugins(self) -> List[Any]:
+        """Return registered plugins that contribute to the composite.
+
+        Auxiliary plugins (e.g. SDT-MOT) are excluded; the aggregator
+        consumes only the primary set for the seven-sub-test weighted
+        composite.
+        """
+        with self._lock:
+            return [p for p in self._items.values() if not is_auxiliary_plugin(p)]
+
+    def auxiliary_plugins(self) -> List[Any]:
+        """Return registered plugins flagged as auxiliary measurements."""
+        with self._lock:
+            return [p for p in self._items.values() if is_auxiliary_plugin(p)]
+
     def clear(self) -> None:
         """Reset the registry. Test-only; production never calls this."""
         with self._lock:
@@ -345,5 +399,7 @@ __all__ = [
     "validate_plugin",
     "register_plugin",
     "list_plugins",
+    "is_auxiliary_plugin",
+    "requires_multi_turn_dispatch",
     "registry",
 ]

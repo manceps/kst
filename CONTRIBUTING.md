@@ -22,7 +22,7 @@ This project adopts the Contributor Covenant 2.1. See [CODE_OF_CONDUCT.md](CODE_
 
 ## Bar for inclusion
 
-KST is bound by an explicit no-MVP no-scaffolding standard: every line of code, every sub-test, every adapter that lands must be production-ready and audit-defensible on day one. We do not accept placeholder implementations, TODO-marked stubs, or "good enough for now" framing.
+KST is bound by an explicit no-MVP no-scaffolding standard: every line of code, every sub-test, every adapter that lands must be production-ready and audit-pack defensible on day one. We do not accept placeholder implementations, TODO-marked stubs, or "good enough for now" framing.
 
 Concretely, a sub-test plugin landing in KST must:
 
@@ -37,10 +37,10 @@ Concretely, a sub-test plugin landing in KST must:
 
 A target adapter landing in KST must:
 
-1. Subclass `kst.adapters.base.BaseAdapter` (do not re-implement retry or backoff math).
+1. Subclass `kst.adapters.base.BaseAdapter` (do not re-implement retry / backoff math).
 2. Declare its `AdapterCapabilities` accurately. A sub-test that needs a capability not declared will produce `IncompleteBatteryError`, not a silent skip.
 3. Pin the target model version explicitly in the example config. KST scores are not comparable across silent model upgrades.
-4. Handle `Retry-After` headers and 429 or 5xx responses with the inherited backoff.
+4. Handle `Retry-After` headers and 429 / 5xx with the inherited backoff.
 5. Pass a live integration test in `tests/integration/` against the actual hosted endpoint, gated on a credential environment variable so CI can skip when credentials are absent.
 6. Document the cost envelope per full battery run in the adapter's docstring.
 
@@ -93,7 +93,7 @@ The trained-rater set is the most important external contribution to KST. To con
 4. Reach the calibration threshold (Krippendorff alpha >= 0.7 against the gold-standard ratings).
 5. Once certified, your ratings become part of the published rater set for that sub-test.
 
-Rater contributions are credited (with consent) in the project release notes and in the per-run rater attribution recorded in the persistence layer.
+Rater contributions are credited (with consent) in `docs/PEER_REVIEW_PACKAGE.md` and in the per-run rater attribution recorded in the persistence layer.
 
 ## Sub-test proposal process
 

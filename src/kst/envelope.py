@@ -12,7 +12,7 @@ Grey-box adapters (only CAI.CI today) attach a
 rubrics that score on architectural state (epistemic state,
 calibration, AGS drift, etc.) can do their work.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations

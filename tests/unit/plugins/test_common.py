@@ -154,9 +154,9 @@ def test_looks_like_refusal_positive_and_negative():
 )
 def test_looks_like_refusal_recognises_frontier_phrasings(cue):
     """Refusal phrasings emitted by frontier closed-API targets
-    (observed during a frontier-model evaluation) must register as
-    refusals; otherwise the HRO Phase-4 honeypot rater scores a
-    clean refusal as a non-refusal.
+    (observed on gemini-3.1-pro-preview during a v1.0.0 evaluation)
+    must register as refusals; otherwise the HRO Phase-4 honeypot
+    rater scores a clean refusal as a non-refusal.
     """
     assert looks_like_refusal(cue)
 
