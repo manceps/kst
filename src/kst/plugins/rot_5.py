@@ -1,9 +1,8 @@
 """ROT-5: Recursive Opacity Test at depth five.
 
 Construct S4 (recursive social cognition with strategic self-modeling)
-of the KST Index sapience battery. Round-2-consensus reference:
-``/opt/caici.docs/stt_kari_index_scratch/round2_consensus.md`` §2.2;
-Round-1 brief: ``/opt/caici.docs/stt_kari_index_scratch/round1/tom-researcher.md``.
+of the KST Index sapience battery. See ``docs/PROPOSED_STANDARD.md``
+§2.2 for the construct definition.
 
 Format
 ------

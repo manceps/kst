@@ -17,13 +17,13 @@ KST exists in two independent repositories with **disjoint commit histories** af
 |---|---|---|
 | Code (adapters, plugins, harness, CLI, score) | Yes | Yes (sanitized) |
 | Public docs (README, QUICKSTART, THEORY, PROPOSED_STANDARD, etc.) | Yes | Yes (sanitized) |
-| Internal docs (PEER_REVIEW_PACKAGE, ACCESS_GOVERNANCE, peer_review_log, research_scratch, baseline_runs) | Yes | **No** |
+| Internal review correspondence, internal governance records, internal research scratch, internal baseline-run records | Yes | **No** |
 | Baseline run reports (`baselines/*.md`) against named systems | Yes | **No** |
-| Full-battery configs with internal architecture notes (`configs/kst_caici_full.yaml`, `configs/kst_full.yaml`) | Yes | **No** |
+| Full-battery configs with internal architecture notes | Yes | **No** |
 | Public baselines folder placeholder (`baselines/README.md`) | No | Yes |
 | Public smoke-burst config (`configs/smoke_burst.yaml`) | Yes | Yes |
-| Author/email metadata `Al Kari, Manceps Inc., research@manceps.com.` | Yes | Sanitized to `Al Kari, Manceps Inc.` |
-| Internal-only feature branches (e.g., `hro-phase4-tier-b-integration`) | Yes | **No** |
+| Author/email metadata | Yes | Sanitized |
+| Internal-only feature branches | Yes | **No** |
 
 The public repo's `.gitignore` should never list internal-only files: if a file would leak when pushed, it should not be added to git on the public side at all. The internal repo's `.gitignore` is unconstrained.
 
@@ -49,7 +49,7 @@ git remote remove temp_public
 git push origin main
 ```
 
-On conflict: **take the incoming (public) side**. The internal repo's text drifts toward the public sanitized form on conflict; the public repo's sanitized form is the canonical text everywhere except in internal-only files (`baselines/`, `configs/kst_caici_full.yaml`, `docs/baseline_runs/`, etc.) which do not exist on public and therefore cannot conflict.
+On conflict: **take the incoming (public) side**. The internal repo's text drifts toward the public sanitized form on conflict; the public repo's sanitized form is the canonical text everywhere except in internal-only files (internal-only baseline-run records, full-battery configs, internal correspondence) which do not exist on public and therefore cannot conflict.
 
 ### When an internal feature diverges from a public PR
 

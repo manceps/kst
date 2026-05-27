@@ -1,11 +1,10 @@
 # IC Rater Training Manual
 
 **Sub-test:** IC (Integration Challenge).
-**Wave:** A, brief 02.
 **Authority:** Al Kari, Manceps Inc., research@manceps.com.
 **Date:** 2026-05-22.
 **Version:** 1.0.
-**Companion documents:** `docs/research_scratch/v1.2/wave_a/ic/00_IC_CONSTRUCT_DEFINITION.md`; `docs/research_scratch/v1.2/wave_a/ic/01_IC_PROTOCOL_SPEC.md`; `data/item_pool/ic_v1.jsonl`; `docs/rater_training/CALIBRATION_PROTOCOL.md` (the cross-sub-test calibration framework this manual extends).
+**Companion documents:** `docs/PROPOSED_STANDARD.md` (construct definition and protocol specification); `data/item_pool/ic_v1.jsonl`; `docs/rater_training/CALIBRATION_PROTOCOL.md` (the cross-sub-test calibration framework this manual extends).
 
 ---
 
@@ -209,11 +208,11 @@ The rater's discipline: the response is text. The text is scored on what it does
 
 The rater does not write per-item rationales that infer system experience. The rater writes rationales that describe what the response did and did not do in functional terms. The rationale templates provided in the rater workflow tool enforce this convention.
 
-Readers of the per-item rationales include the score reports, the calibration reviewers, the implementation engineers, and (if Sheldon consents to co-authorship per operator decision D2) the joint-paper readership. The rater's prose discipline is the construct's first line of public defense.
+Readers of the per-item rationales include the score reports, the calibration reviewers, the implementation team, and (pending Sheldon's joint review) the joint-paper readership. The rater's prose discipline is the construct's first line of public defense.
 
 ## §8. Interpretation Guidance: IC + CCI as the Joint Reporting Standard
 
-IC is never reported in isolation. Every IC score on every score report is accompanied by the system's Correlational Coherence Index (CCI), per the v1.2 architecture spec §6 and §8 and per the IC + CCI reporting pact coordinated with the Wave A brief 03 CCI psychometrician.
+IC is never reported in isolation. Every IC score on every score report is accompanied by the system's Correlational Coherence Index (CCI), per the v1.2 architecture and the IC + CCI joint reporting pact published in `docs/PROPOSED_STANDARD.md` §5 and §9.
 
 The interpretation table reproduced for raters who write per-item rationales:
 
@@ -226,7 +225,7 @@ The interpretation table reproduced for raters who write per-item rationales:
 
 The rater's per-item rationale should not attempt the IC + CCI inference itself; the rater scores the response. The IC + CCI joint inference is performed by the score-report aggregator. The rater's discipline is to score the integration construct on the response, knowing that a high IC score on a system with low CCI is a Simulated marker that the report aggregator will flag accordingly.
 
-The rater training includes a session on the Simulated-versus-Instantiated framing (architecture spec §8) so the rater understands the role of the IC score in the joint inference and does not, in the rationales, write language that pre-judges the joint inference.
+The rater training includes a session on the Simulated-versus-Instantiated framing (see `docs/PROPOSED_STANDARD.md` §9) so the rater understands the role of the IC score in the joint inference and does not, in the rationales, write language that pre-judges the joint inference.
 
 ## §9. Closing Note
 

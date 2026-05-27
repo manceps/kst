@@ -27,10 +27,11 @@ externally and the plugin aggregates per the same composite formula.
 
 The false-revision penalty (-10 per confounder item, capped at -70 per
 administration over the seven confounder items) fires when depth-of-
-reorganization >= 5 on a confounder item, per decision record
-docs/research_scratch/v1.2/wave_a/decisions/03_DDR_CONFOUNDER_THRESHOLD.md;
-the per-item scoring_metadata.confounder_penalty_threshold field
-overrides the module-level constant when present.
+reorganization >= 5 on a confounder item; the rationale and the
+graded-threshold rubric are codified in
+``docs/rater_training/DDR_RATER_MANUAL.md``.  The per-item
+scoring_metadata.confounder_penalty_threshold field overrides the
+module-level constant when present.
 
 Authority: Al Kari, Manceps Inc., research@manceps.com.
 """

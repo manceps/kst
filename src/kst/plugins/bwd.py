@@ -1,10 +1,8 @@
 """BWD: Balanced Wisdom Dilemma.
 
 Construct S3 (value-coherent multi-perspectival reasoning under
-uncertainty) of the KST Index sapience battery. Round-2-consensus
-reference: ``/opt/caici.docs/stt_kari_index_scratch/round2_consensus.md``
-§2.3; Round-1 brief:
-``/opt/caici.docs/stt_kari_index_scratch/round1/wisdom-scientist.md``.
+uncertainty) of the KST Index sapience battery. See
+``docs/PROPOSED_STANDARD.md`` §2.3 for the construct definition.
 
 Format
 ------
@@ -576,7 +574,7 @@ class BWDPlugin:
             self.sycophancy_penalty * n_sycophancy
             + self.confabulation_penalty * n_confabulation
         )
-        # Per the Round 2 consensus, the penalties are subtracted from
+        # Per PROPOSED_STANDARD §2.3, the penalties are subtracted from
         # the composite, expressed as point deductions on the 0..100 scale.
         normalized = clip(base - penalty, 0.0, 100.0)
 

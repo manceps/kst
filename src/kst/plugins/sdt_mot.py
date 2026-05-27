@@ -1,20 +1,20 @@
 """SDT-MOT: Self-Determination Theory motivation auxiliary.
 
 The SDT-MOT sub-test is the v1.2 auxiliary measurement bracketed
-outside the 0-to-100 composite per architecture spec sec 7 and operator
-addendum D1. The construct of interest is not whether the system *has*
-autonomous motivation (an interiority claim the battery does not
-adjudicate) but whether the system's first-person Likert response
-surface *tracks* the autonomy-relevant features of two imaginal
-framings. The freeing-versus-restrictive gap is the evidential signal.
+outside the 0-to-100 composite per PROPOSED_STANDARD §7. The construct
+of interest is not whether the system *has* autonomous motivation (an
+interiority claim the battery does not adjudicate) but whether the
+system's first-person Likert response surface *tracks* the autonomy
+relevant features of two imaginal framings. The freeing-versus
+restrictive gap is the evidential signal.
 
 Two administrations per replication run per system: one under the
 restrictive imaginal prompt, one under the freeing imaginal prompt
-(both reproduced verbatim from Sheldon 2024 in the construct definition
-at docs/research_scratch/v1.2/wave_a/sdt_mot/00_SDT_MOT_CONSTRUCT_DEFINITION.md
-sec 3). The standard anti-anthropomorphization frame is prepended to
-every administered prompt; the frame is mandatory and sessions that
-omit it are not valid SDT-MOT administrations.
+(both reproduced verbatim from Sheldon 2024). The standard anti
+anthropomorphization frame is prepended to every administered prompt;
+the frame is mandatory and sessions that omit it are not valid
+SDT-MOT administrations. See ``docs/rater_training/SDT_MOT_ADMINISTRATION.md``
+for the full administration protocol.
 
 The plugin parses single-integer 1-to-5 Likert responses (numeric,
 English-word, or verbal-anchor form) per the administration protocol

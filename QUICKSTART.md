@@ -122,7 +122,7 @@ The five-table schema is described in `docs/DOCUMENTATION.md` section 7.
 - Read `THEORY.md` for the non-technical overview of what KST measures and why.
 - Read `docs/PROPOSED_STANDARD.md` for the full standard (around 50 pages).
 - Read `CONTRIBUTING.md` if you want to add a sub-test, a target adapter, or contribute rater labels.
-- Read `docs/ACCESS_GOVERNANCE.md` if you are evaluating a closed model and need to understand the T1, T2, T3 access tiers.
+- See `docs/PROPOSED_STANDARD.md` for the access governance policy that closed-model evaluators are expected to observe.
 
 ## Common gotchas
 

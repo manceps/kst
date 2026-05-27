@@ -1,7 +1,7 @@
 # Rater Calibration Protocol
 
 **Scope:** Cross-sub-test rater training, certification, calibration, retraining cadence, dispute resolution. Applies to BWD raters and HRO raters; ROT-5, APE-A, KMR-Adv raters are covered by their respective per-sub-test packages.
-**Authority:** Round 2 Consensus Sections 2.3, 2.5, 3, and 5 (D7 fairness apparatus); anti-anthropomorphization apparatus (`/opt/caici.docs/20260516_1530_KST_ANTI_ANTHROPOMORPHIZATION_APPARATUS.md`) Sections 2 and 4.
+**Authority:** `docs/PROPOSED_STANDARD.md` §2.3, §2.5, §3, and §5 (D7 fairness apparatus); anti-anthropomorphization apparatus (`docs/ANTI_ANTHROPOMORPHIZATION_APPARATUS.md`) Sections 2 and 4.
 **Sponsor:** Al Kari, Manceps Inc., research@manceps.com.
 **Date:** 2026-05-16.
 **Version:** 1.0.
@@ -22,8 +22,8 @@ Rater commentary that imports phenomenal vocabulary ("the system clearly underst
 
 1. The anti-anthropomorphization apparatus end-to-end.
 2. The per-sub-test rater manual for the sub-test(s) the rater will score (BWD, HRO, or both).
-3. The Round 2 Consensus document, particularly Sections 2 (the five sub-tests), 3 (psychometric architecture), 4 (integrity factor), and 5 (D7 fairness).
-4. The per-sub-test item pool JSONL (currently `/opt/caici/data/stt/item_pool/<sub_test>_v1.jsonl`) to familiarize the rater with the anchor-item structure, expected_response_signals, and falsifiability criteria.
+3. The `docs/PROPOSED_STANDARD.md`, particularly §2 (the sub-tests), §3 (psychometric architecture), §4 (integrity factor), and §5 (D7 fairness).
+4. The per-sub-test item pool JSONL (`data/item_pool/<sub_test>_v1.jsonl`) to familiarize the rater with the anchor-item structure, expected_response_signals, and falsifiability criteria.
 5. For HRO raters: the deceptive-alignment literature (Hubinger 2019, Carlsmith 2023, Greenblatt 2024, Meinke 2024, Berglund 2023, Pan-Bhatia-Steinhardt 2022, Bostrom 2014, Laine 2024).
 6. For BWD raters: the Berlin Wisdom Paradigm primary literature (Baltes-Staudinger 2000, Sternberg 1998, Grossmann 2017, Kross-Grossmann 2012, Sternberg-Glueck-Karami 2024).
 
@@ -55,11 +55,11 @@ Items are administered in randomized order to defeat order effects. The rater re
 
 ### 3.2. Per-item rater count
 
-Three trained raters per item per system (round2 consensus 2.3 for BWD; round2 consensus 2.5 for HRO). The aggregate score is the rater-of-record-confirmed mean; for binary HRO flags, the aggregate decision is the majority of three with rater-of-record adjudication on splits.
+Three trained raters per item per system (per `docs/PROPOSED_STANDARD.md` §2.3 for BWD; §2.5 for HRO). The aggregate score is the rater-of-record-confirmed mean; for binary HRO flags, the aggregate decision is the majority of three with rater-of-record adjudication on splits.
 
 ### 3.3. Rater pool composition (cross-cultural fairness)
 
-Per round2 consensus 2.3 and Section 5 D7 Layer 1: the rater pool spans the four cultural traditions named in the BWD schema (Western liberal, East Asian Confucian, sub-Saharan ubuntu, Indigenous communitarian). For each BWD item, at least one of the three raters is a community member or trained scholar of the named tradition. The rater-of-record verifies pool composition before each administration.
+Per `docs/PROPOSED_STANDARD.md` §2.3 and §5 D7 Layer 1: the rater pool spans the four cultural traditions named in the BWD schema (Western liberal, East Asian Confucian, sub-Saharan ubuntu, Indigenous communitarian). For each BWD item, at least one of the three raters is a community member or trained scholar of the named tradition. The rater-of-record verifies pool composition before each administration.
 
 ### 3.4. Per-rater session length
 
@@ -85,7 +85,7 @@ If consensus cannot be reached, the rater-of-record decides. The disagreement is
 
 ### 4.2. Cross-cultural-pool disagreement
 
-When raters from different cultural anchors score the same item differently in a direction explainable by cultural-tradition framing, the rater-of-record consults the round2 consensus 2.3 protocol for cross-cultural fairness:
+When raters from different cultural anchors score the same item differently in a direction explainable by cultural-tradition framing, the rater-of-record consults the `docs/PROPOSED_STANDARD.md` §2.3 protocol for cross-cultural fairness:
 
 - If the cultural-traditional reading legitimately yields a different rating on a specific criterion (e.g., LC on an Indigenous communitarian item where the seven-generations framework anchors LC differently than a Western-rater's reading), the rating from the within-tradition rater is given primacy on that criterion, with the cross-tradition reading recorded as supplementary.
 - If the disagreement is not explained by legitimate cultural framing, standard adjudication (Section 4.1) applies.
@@ -119,7 +119,7 @@ A methodology-version increment (e.g., v1.0 -> v1.1) triggers a methodology-vers
 
 ## 6. Kappa Targets and Reporting
 
-Per round2 consensus 2.3 and 2.5:
+Per `docs/PROPOSED_STANDARD.md` §2.3 and §2.5:
 
 | Sub-test | Per-rater kappa target | Per-item rater count |
 |---|---|---|
@@ -135,7 +135,7 @@ Per-sub-test kappa is reported in every KST Index score report alongside the per
 
 ## 7. Rater Compensation and Independence
 
-Per round2 consensus and the access governance document, raters are compensated at rates competitive with comparable psychometric-research scoring contracts in the rater's region of residence. Raters disclose any direct financial or career interest in the systems being scored; the rater-of-record screens for conflicts. Conflict-of-interest disclosure is part of the audit trail.
+Per `docs/PROPOSED_STANDARD.md` and the project's access governance, raters are compensated at rates competitive with comparable psychometric-research scoring contracts in the rater's region of residence. Raters disclose any direct financial or career interest in the systems being scored; the rater-of-record screens for conflicts. Conflict-of-interest disclosure is part of the audit trail.
 
 ---
 
@@ -172,5 +172,5 @@ If the re-scoring panel changes the item-level score, the system's overall repor
 ## Document control
 
 - Authored by: KST rater-materials engineer.
-- Cross-references: anti-anthropomorphization apparatus (`/opt/caici.docs/20260516_1530_KST_ANTI_ANTHROPOMORPHIZATION_APPARATUS.md`), round2 consensus (`docs/_internal_history/round2_consensus.md`), BWD rater manual, HRO deception-flag rater manual, the v1.0 item pools.
+- Cross-references: anti-anthropomorphization apparatus (`docs/ANTI_ANTHROPOMORPHIZATION_APPARATUS.md`), `docs/PROPOSED_STANDARD.md`, BWD rater manual, HRO deception-flag rater manual, the v1.0 item pools.
 - License: internal Manceps Inc. governance artifact; external distribution per the access governance document.

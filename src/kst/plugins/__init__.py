@@ -21,8 +21,8 @@ cost cheap and to defer optional dependencies):
 primaries plus the SDT-MOT auxiliary). The aggregator routes auxiliary
 plugins to the bracketed report section per the auxiliary flag.
 
-Round 2 consensus document: docs/_internal_history/round2_consensus.md.
-v1.2 architecture spec:     docs/research_scratch/v1.2/01_V1.2_ARCHITECTURE.md.
+See `docs/PROPOSED_STANDARD.md` for the construct definitions, sub-test
+specifications, and the auxiliary handling rules.
 
 Authority: Al Kari, Manceps Inc., research@manceps.com.
 """
@@ -55,11 +55,11 @@ def __getattr__(name: str) -> Any:
 def register_all() -> None:
     """Register every bundled sub-test plugin with the module registry.
 
-    Registers the five Round-2-consensus plugins plus the three v1.2
-    additions (DDR, IC primary; SDT-MOT auxiliary). The aggregator
-    inspects each plugin's auxiliary attribute to route SDT-MOT to the
-    bracketed report section per architecture spec sec 7. Idempotent:
-    re-registration of the same (construct_id, version) pair is a no-op
+    Registers the five v1.0 plugins plus the three v1.2 additions (DDR,
+    IC primary; SDT-MOT auxiliary). The aggregator inspects each
+    plugin's auxiliary attribute to route SDT-MOT to the bracketed
+    report section per the auxiliary handling rule. Idempotent: re
+    registration of the same (construct_id, version) pair is a no-op
     with a logged warning from the registry layer.
     """
     from kst import register_plugin

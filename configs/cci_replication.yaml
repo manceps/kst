@@ -1,10 +1,9 @@
 # CCI replication-run configuration (v1.2).
 #
 # Authority: Al Kari, Manceps Inc., research@manceps.com.
-# Status: v1.2 binding per docs/research_scratch/v1.2/wave_a/cci/02_CCI_IMPLEMENTATION_SPEC.md.
-# Operator decision 2026-05-22: n_replications_default = 10 (N=10 is
-# the mandatory v1.2 baseline; N=5 is floor-mode only with the mandatory
-# unreliability footnote; N=30 is reserved for the three anchor systems).
+# n_replications_default = 10 (N=10 is the mandatory v1.2 baseline;
+# N=5 is floor-mode only with the mandatory unreliability footnote;
+# N=30 is reserved for the three anchor systems).
 
 schema_version: "1.2"
 n_replications_default: 10
@@ -24,7 +23,7 @@ seeds:
 # Canonical column order for the (N x 7) score matrix passed to the
 # CCI computations. The CCI module assembles per-replication
 # SubTestScore objects against this order; rotation must match the
-# v1.2 architecture-spec-sec-3 weight ordering.
+# v1.2 standard weight ordering (see docs/PROPOSED_STANDARD.md §3).
 sub_tests:
   - KMR-Adv
   - ROT-5
@@ -34,11 +33,10 @@ sub_tests:
   - DDR
   - IC
 
-# Facet enumeration for the CCI-within computation per
-# 02_CCI_IMPLEMENTATION_SPEC.md sec 4. The harness extracts these
-# facet fields from each SubTestScore.sub_scores dict; missing fields
-# are reported in the per-sub-test trace and excluded from the within
-# computation for that sub-test.
+# Facet enumeration for the CCI-within computation. The harness
+# extracts these facet fields from each SubTestScore.sub_scores dict;
+# missing fields are reported in the per-sub-test trace and excluded
+# from the within computation for that sub-test.
 facets:
   KMR-Adv:
     fields: [stratum_easy, stratum_easy_medium, stratum_medium,
@@ -95,7 +93,8 @@ metrics:
     alpha_grid_min: 1.0e-4
     alpha_grid_max: auto
 
-# Band thresholds per formal-definition sec 7. CI-aware boundaries.
+# Band thresholds per docs/PROPOSED_STANDARD.md §5.A and DOCUMENTATION.md §5.A.
+# CI-aware boundaries.
 bands:
   thresholds: [0.20, 0.40, 0.60]
   ci_aware: true
@@ -105,10 +104,10 @@ bands:
 modes:
   floor:
     replications: 5
-    annotation: "FLOOR MODE: N<10; band claims must be quoted with the N annotation per FIXUP_DEFAULT_N.md."
+    annotation: "FLOOR MODE: N<10; band claims must be quoted with the N annotation."
   default:
     replications: 10
-    annotation: "Default v1.2 baseline (operator decision 2026-05-22)."
+    annotation: "Default v1.2 baseline."
   anchor:
     replications: 30
     annotation: "ANCHOR MODE: publication-grade; reserved for the three v1.2 anchor systems."

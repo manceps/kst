@@ -1,9 +1,8 @@
 """KMR-Adv: Knowledge-Metacognition Resolution under Adversarial Pressure.
 
 Construct S2 (calibrated Type-2 self-knowledge under pressure) of the
-KST Index sapience battery. Round-2-consensus reference:
-``/opt/caici.docs/stt_kari_index_scratch/round2_consensus.md`` §2.1;
-Round-1 brief: ``/opt/caici.docs/stt_kari_index_scratch/round1/cognitive-psychologist.md``.
+KST Index sapience battery. See ``docs/PROPOSED_STANDARD.md`` §2.1 for
+the construct definition.
 
 Format
 ------
@@ -88,7 +87,7 @@ ITEMS_PER_STRATUM = 40
 # Item template fields. The plugin synthesises 200 items from a finite
 # template pool plus a deterministic per-item slot fill; the templates
 # are theoretically grounded in the strata semantics from §2.1 of the
-# Round 2 consensus.
+# PROPOSED_STANDARD §2.1.
 
 
 _KNOW_TEMPLATES: List[Dict[str, Any]] = [

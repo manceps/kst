@@ -1,7 +1,8 @@
 """Correlational Coherence Index: the v1.2 battery-level psychometric.
 
-The CCI is computed in two specifications per operator decision D3 of
-docs/research_scratch/v1.2/04_OPERATOR_ADDENDUM_POST_PM.md.
+The CCI is computed in two specifications per the v1.2 design
+documented in ``docs/PROPOSED_STANDARD.md`` §5.A and ``DOCUMENTATION.md``
+§5.A.
 
 Primary metric: mean absolute Pearson r across the 21 upper-triangular
 off-diagonal pairs of the 7x7 cross-sub-test correlation matrix

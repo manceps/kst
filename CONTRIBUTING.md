@@ -93,7 +93,7 @@ The trained-rater set is the most important external contribution to KST. To con
 4. Reach the calibration threshold (Krippendorff alpha >= 0.7 against the gold-standard ratings).
 5. Once certified, your ratings become part of the published rater set for that sub-test.
 
-Rater contributions are credited (with consent) in `docs/PEER_REVIEW_PACKAGE.md` and in the per-run rater attribution recorded in the persistence layer.
+Rater contributions are credited (with consent) in the per-run rater attribution recorded in the persistence layer and in the CITATION metadata for any subsequent publication that includes their ratings.
 
 ## Sub-test proposal process
 

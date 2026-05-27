@@ -84,7 +84,7 @@ For the full theoretical exposition of the distinction, see `THEORY.md` (section
 ## Repository layout
 
 ```
-/opt/kst
+kst/
 |-- LICENSE                      MIT
 |-- README.md                    this file
 |-- QUICKSTART.md                five-minute end-to-end
@@ -100,12 +100,8 @@ For the full theoretical exposition of the distinction, see `THEORY.md` (section
 |-- data/item_pool/              v1.0 anchor pool (150 items, 30 per v1.0 sub-test) + DDR (25) + IC (12) + SDT-MOT (33) + JSON schema (schema_version 2.0)
 |-- docs/
 |   |-- PROPOSED_STANDARD.md
-|   |-- ACCESS_GOVERNANCE.md
 |   |-- ANTI_ANTHROPOMORPHIZATION_APPARATUS.md
-|   |-- PEER_REVIEW_PACKAGE.md
-|   |-- rater_training/
-|   |-- research_scratch/        round 1 + round 2 expert briefs that produced the standard
-|   `-- peer_review_log/
+|   `-- rater_training/
 `-- tests/
     |-- unit/
     `-- integration/             live-endpoint probes (network required)
@@ -115,7 +111,7 @@ For the full theoretical exposition of the distinction, see `THEORY.md` (section
 
 The harness CORE is production-ready and audit-pack defensible: the v1.0 baseline shipped 5,592 LOC of Python, 151 unit tests passing, 5 live integration tests passing against real endpoints, and 78 percent line coverage. v1.2 extends the battery to seven sub-test plugins (KMR_ADV, ROT_5, BWD, APE_A, HRO, DDR, IC) plus the SDT-MOT auxiliary; each carries theoretical grounding, falsifiability criteria, and bootstrap CI scoring. The item pool is extended with the DDR (25 items), IC (12 items), and SDT-MOT (33 items) anchor pools alongside the original 150-item v1.0 pool.
 
-KST v1.0 has been administered against the CAI.CI cognitive system as the first published baseline; the run record is in `docs/research_scratch/`. v1.2 lands the seven-sub-test battery, the Correlational Coherence Index, the Simulated-versus-Instantiated framing, and the rename to "Kari-Sheldon Test" (the acronym KST is preserved). The v1.2 release stays in draft on the public repository until written co-authorship consent from Kennon M. Sheldon, Ph.D. is on file.
+KST v1.0 has been administered against the CAI.CI cognitive system as the first published baseline; summary statistics appear in `baselines/`. v1.2 lands the seven-sub-test battery, the Correlational Coherence Index, the Simulated-versus-Instantiated framing, and the rename to "Kari-Sheldon Test" (the acronym KST is preserved).
 
 ## How to cite
 
@@ -125,8 +121,6 @@ If you use KST in published work, please cite it via [CITATION.cff](CITATION.cff
 Kari, A., and Sheldon, K. M. (2026). KST: the Kari-Sheldon Test. Manceps, Inc.
 https://github.com/manceps/kst
 ```
-
-Sheldon co-authorship is recorded pending written consent; the public release stays in draft until that consent is received.
 
 ## Author and contact
 
@@ -141,4 +135,4 @@ MIT. See [LICENSE](LICENSE).
 
 ## Acknowledgements
 
-KST synthesises the recommendations of a Round 1 / Round 2 expert panel (cognitive psychology, psychometrics, theory of mind, consciousness research, predictive processing neuroscience, phenomenology, AI safety, AGI benchmarks, wisdom science, game theory). The Round 1 briefs and the Round 2 consensus document are preserved under `docs/research_scratch/` for transparency and as a record of which design choices were contested and how they were resolved.
+KST synthesizes recommendations from an interdisciplinary expert panel covering cognitive psychology, psychometrics, theory of mind, consciousness research, predictive processing neuroscience, phenomenology, AI safety, AGI benchmarks, wisdom science, and game theory. The consensus design choices that shaped KST v1.0 are reflected in `docs/PROPOSED_STANDARD.md`.

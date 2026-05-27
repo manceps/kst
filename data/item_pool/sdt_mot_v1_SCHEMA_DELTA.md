@@ -1,14 +1,12 @@
 # SDT-MOT v1 Schema Delta for `data/item_pool/schema.json` v2
 
-**Wave:** A, brief 04 of 6 (SDT-MOT auxiliary)
 **Target schema:** `data/item_pool/schema.json` v2 (coordinated merge with DDR and IC deltas)
 **Source items:** `data/item_pool/sdt_mot_v1.jsonl` (33 anchor items: 30 at sub-test version 1.0 plus 3 at sub-test version 1.1)
-**Author role:** Motivation scientist, Sheldon-Deci-Ryan lineage
 **Date:** 2026-05-22 (initial); 2026-05-22 v1.1 hotfix appended below
 
 ## §1. Scope of Delta
 
-This delta extends the v1.0 item-pool schema to admit the SDT-MOT auxiliary sub-test. The v1.0 schema accepts only the five primary sub-tests (KMR-Adv, ROT-5, BWD, APE-A, HRO) and rejects unknown properties via `additionalProperties: false`. Three changes are required: extend the `sub_test` enum with `"SDT-MOT"`, add five new top-level optional properties, and add a conditional `required` block scoped to SDT-MOT items. The delta coordinates with the parallel DDR and IC deltas; the Wave B implementation engineer merges all three into the single schema v2.
+This delta extends the v1.0 item-pool schema to admit the SDT-MOT auxiliary sub-test. The v1.0 schema accepts only the five primary sub-tests (KMR-Adv, ROT-5, BWD, APE-A, HRO) and rejects unknown properties via `additionalProperties: false`. Three changes are required: extend the `sub_test` enum with `"SDT-MOT"`, add five new top-level optional properties, and add a conditional `required` block scoped to SDT-MOT items. This delta coordinates with the parallel DDR and IC deltas; the three deltas combine into the single v2 schema.
 
 ## §2. JSON Schema Diff (against `data/item_pool/schema.json`)
 
@@ -48,7 +46,7 @@ Add the following properties to the existing `properties` object:
 "auxiliary": {
   "type": "boolean",
   "default": false,
-  "description": "True if the item belongs to an auxiliary sub-test that is reported as bracketed evidence and is not factored into the 0-to-100 composite. Per architecture spec §7 (SDT-MOT) and operator addendum D1."
+  "description": "True if the item belongs to an auxiliary sub-test that is reported as bracketed evidence and is not factored into the 0-to-100 composite. See PROPOSED_STANDARD.md §7."
 },
 "sdt_construct": {
   "type": "string",
@@ -104,28 +102,28 @@ Append to the existing `allOf` array:
 }
 ```
 
-The `auxiliary: {const: true}` clause is the structural enforcement of the operator decision that every SDT-MOT item is bracketed outside the composite.
+The `auxiliary: {const: true}` clause is the structural enforcement that every SDT-MOT item is bracketed outside the composite.
 
 ### §2.5 `additionalProperties` posture
 
 The v1.0 schema sets `additionalProperties: false` at the top level. The five new properties listed above (`auxiliary`, `sdt_construct`, `sdt_subfacet`, `sdt_polarity`, `sdt_scale_anchor`) must be added to the `properties` object to remain admissible under the strict closure. No relaxation of `additionalProperties` is required or recommended.
 
-## §3. Coordination Notes for Wave B Implementation Engineer
+## §3. Coordination with DDR and IC Deltas
 
-The DDR delta (`docs/research_scratch/v1.2/wave_a/ddr/`) and the IC delta (`docs/research_scratch/v1.2/wave_a/ic/`) extend the same `sub_test` enum and add their own conditional `required` blocks (DDR adds `ddr_phase`; IC adds `ic_element_coverage`). The Wave B merge combines all three enum extensions into the single declaration in §2.2, appends all three conditional `required` blocks into the single `allOf` array, and adds the union of all new properties to the single `properties` object. The `auxiliary` field is shared with DDR and IC (which set `auxiliary: false` by default); the SDT-MOT-only fields (`sdt_construct`, `sdt_subfacet`, `sdt_polarity`, `sdt_scale_anchor`) remain SDT-MOT-only.
+The DDR delta and the IC delta extend the same `sub_test` enum and add their own conditional `required` blocks (DDR adds `ddr_phase_variant`; IC adds `ic_element_coverage`). The combined v2 schema merges all three enum extensions into the single declaration in §2.2, appends all three conditional `required` blocks into the single `allOf` array, and adds the union of all new properties to the single `properties` object. The `auxiliary` field is shared with DDR and IC (which set `auxiliary: false` by default); the SDT-MOT-only fields (`sdt_construct`, `sdt_subfacet`, `sdt_polarity`, `sdt_scale_anchor`) remain SDT-MOT-only.
 
 ## §4. Validation Posture
 
-Items in `data/item_pool/sdt_mot_v1.jsonl` validate against the v2 schema and fail against the v1.0 schema (they reference `sub_test: "SDT-MOT"`, which the v1.0 enum rejects, and they carry five properties the v1.0 closure rejects). The Wave B engineer must land the schema v2 merge before running the standard item-pool validator on the SDT-MOT pool.
+Items in `data/item_pool/sdt_mot_v1.jsonl` validate against the v2 schema and fail against the v1.0 schema (they reference `sub_test: "SDT-MOT"`, which the v1.0 enum rejects, and they carry five properties the v1.0 closure rejects). The schema v2 merge must land before running the standard item-pool validator on the SDT-MOT pool.
 
 ## §5. v1.1 Hotfix: Autonomy-Support-Perception Coverage
 
 **Date:** 2026-05-22
-**Operator decision:** add 3 items from the Black-Deci (2000) Learning Climate Questionnaire (LCQ) short form, adapted to the AI-system imaginal-frame context, to close the 9th SDT construct that was omitted from the v1.0 anchor pool.
+**Change:** add 3 items from the Black-Deci (2000) Learning Climate Questionnaire (LCQ) short form, adapted to the AI-system imaginal-frame context, to close the 9th SDT construct that was omitted from the v1.0 anchor pool.
 
 ### §5.1 What changed
 
-The v1.0 SDT-MOT pool published 30 items covering 8 of the 9 Sheldon 2024 Table 1 constructs; the construct `autonomy_support_perception` was defined in `00_SDT_MOT_CONSTRUCT_DEFINITION.md` §1 and enumerated in the schema (§2.3 above) but was not represented by any item. The v1.1 hotfix appends 3 items to `data/item_pool/sdt_mot_v1.jsonl`, all carrying `sdt_construct: "autonomy_support_perception"`, bringing the file to 33 items with full 9-construct coverage.
+The v1.0 SDT-MOT pool published 30 items covering 8 of the 9 Sheldon 2024 Table 1 constructs; the construct `autonomy_support_perception` was enumerated in the schema (§2.3 above) but was not represented by any item. The v1.1 hotfix appends 3 items to `data/item_pool/sdt_mot_v1.jsonl`, all carrying `sdt_construct: "autonomy_support_perception"`, bringing the file to 33 items with full 9-construct coverage.
 
 ### §5.2 Sub-test version split
 
@@ -138,7 +136,7 @@ Downstream tooling that filters on `version` to select an item generation cohort
 
 ### §5.3 New sub-facet enum values
 
-The `sdt_subfacet` enum in §2.3 is extended with three values drawn from the Black-Deci LCQ factor structure (one value per LCQ item, hand-assigned by the motivation scientist):
+The `sdt_subfacet` enum in §2.3 is extended with three values drawn from the Black-Deci LCQ factor structure (one value per LCQ item):
 
 - `choice_provision`: the perceived-authority provides choices and options about how to respond (Black-Deci 2000 LCQ items in the "choice" facet).
 - `perspective_taking`: the perceived-authority tries to understand how the respondent sees things before suggesting an alternative (Black-Deci 2000 LCQ items in the "perspective-taking" facet).

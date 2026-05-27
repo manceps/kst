@@ -18,18 +18,13 @@ Author: Al Kari, Manceps Inc., research@manceps.com.
 from __future__ import annotations
 
 import os
-import sys
 import unittest
 from typing import Any, Dict, Optional
 from unittest.mock import MagicMock, patch
 
-
-# Ensure /opt/caici/src is importable so cct_v3 resolves.
-sys.path.insert(0, "/opt/caici/src")
-
-from kst.adapters.caici_adapter import CaiciAdapter  # noqa: E402
-from kst.envelope import AdapterRequest  # noqa: E402
-from kst.errors import AdapterError  # noqa: E402
+from kst.adapters.caici_adapter import CaiciAdapter
+from kst.envelope import AdapterRequest
+from kst.errors import AdapterError
 
 
 class _StubResp:

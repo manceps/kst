@@ -152,7 +152,7 @@ KST is published as a candidate industry standard. It is not the final form. We 
 - Adapter additions for new target systems
 - Periodic version bumps with explicit non-comparability annotations
 
-The Round 1 and Round 2 expert briefs that produced the initial standard are preserved under `docs/research_scratch/` so the community can see which design choices were contested and how they were resolved.
+The expert panel that produced the initial standard is documented in `docs/PROPOSED_STANDARD.md`.
 
 KST is open source under MIT. Contributions are welcome. See `CONTRIBUTING.md`.
 

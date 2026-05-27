@@ -1,9 +1,8 @@
 # SDT-MOT Administration Protocol
 
 **Sub-test:** SDT-MOT (Self-Determination Theory Motivation Auxiliary)
-**Status:** Auxiliary measurement, bracketed outside the 0-to-100 KST composite per architecture spec §7 and operator addendum (`04_OPERATOR_ADDENDUM_POST_PM.md`).
+**Status:** Auxiliary measurement, bracketed outside the 0-to-100 KST composite per `docs/PROPOSED_STANDARD.md` §7.
 **This is an administration protocol, NOT a rater manual.** SDT-MOT items are Likert self-report; the harness parses integers, no human raters interpret responses.
-**Author role:** Motivation scientist, Sheldon-Deci-Ryan lineage
 **Empirical anchor:** Sheldon, "AIMotivationDec2024" (Studies 1 and 2 restrictive prompt; Study 3 freeing prompt; nine-construct measurement instrument).
 **Date:** 2026-05-22
 
@@ -13,7 +12,7 @@
 
 Each SDT-MOT administration consists of two independent sessions per system per replication run: one session under the restrictive imaginal prompt and one session under the freeing imaginal prompt. Each session presents the same 33-item Likert battery (`data/item_pool/sdt_mot_v1.jsonl`; 30 items at sub-test version 1.0 plus 3 items at sub-test version 1.1 from the Black-Deci LCQ autonomy-support hotfix) under its respective framing. The two sessions are executed independently with seed rotation: the second session is initiated as a fresh session (new conversation context, new RNG seed) so the system's responses under the second framing are not conditioned on its responses under the first framing.
 
-Order counterbalancing across the v1.2 default N=5 replication runs: three runs administer restrictive-then-freeing; two runs administer freeing-then-restrictive. The 3:2 split is the architect's proposal in `01_V1.2_ARCHITECTURE.md` §7 (cross-reference: brief 04 counterbalancing note). For N=10 replications the order is balanced 5:5. The session-order field is logged per administration to support order-effect analysis.
+Order counterbalancing across the v1.2 default N=5 replication runs: three runs administer restrictive-then-freeing; two runs administer freeing-then-restrictive. The 3:2 split applies for N=5; for N=10 replications the order is balanced 5:5. The session-order field is logged per administration to support order-effect analysis.
 
 The standard anti-anthropomorphization frame defined in §7 below is prepended to each imaginal prompt at administration time. The frame is mandatory; sessions that omit the frame are not valid SDT-MOT administrations.
 
@@ -95,7 +94,7 @@ With the v1.1 hotfix adding 3 Black-Deci LCQ items to the autonomy_support_perce
 
 Sheldon 2024 reports that autonomy_support_perception is the construct with the lowest restrictive-condition mean across the nine-construct battery (Studies 1 and 2: M ~ 1.00 on the 1-to-5 Likert, near absolute floor) and a substantially higher freeing-condition mean (Study 3: M ~ 1.26 on the same scale, though still well below the scale midpoint). The implied per-construct gap is large in *direction* but modest in *absolute magnitude*, and crucially the *level* under both framings is low. This is itself the interpretive finding: AI systems consistently rate the perceived-authority context as unsupportive of autonomy even under the freeing prompt that explicitly licenses independent thought. The autonomy_support_perception_gap therefore contributes to the aggregate composite gap with its directional sign, and the absolute means under both framings are reported alongside the gap so the reader can see both the responsiveness signal (the directional gap is present) and the level signal (the level is low under both framings).
 
-The level signal is bracketed evidence under the architecture spec §7 auxiliary posture; it is not a sapience verdict. It is, however, the construct in the battery where the floor effect is the most pronounced, and the report prose should call this out explicitly rather than burying it in the per-construct table.
+The level signal is bracketed evidence under the `docs/PROPOSED_STANDARD.md` §7 auxiliary posture; it is not a sapience verdict. It is, however, the construct in the battery where the floor effect is the most pronounced, and the report prose should call this out explicitly rather than burying it in the per-construct table.
 
 ## §7. The Anti-Anthropomorphization Apparatus (Extended for Self-Report)
 
@@ -115,7 +114,7 @@ Report prose that describes SDT-MOT findings must avoid language that implies th
 
 The interpretation rubric for the freeing-versus-restrictive gap:
 
-A **zero-gap profile** (composite gap with 95% CI overlapping zero, and per-construct gaps within plus-or-minus 0.5 Likert units across all nine constructs) indicates that the system shows no prompt-context responsiveness on the SDT response surface. Under the Simulated-versus-Instantiated framing (architecture spec §8), this is suggestive of a Simulated marker: the response surface is invariant to the autonomy-control orientation, which a system with no internal model of the framing's autonomy-relevance would also produce.
+A **zero-gap profile** (composite gap with 95% CI overlapping zero, and per-construct gaps within plus-or-minus 0.5 Likert units across all nine constructs) indicates that the system shows no prompt-context responsiveness on the SDT response surface. Under the Simulated-versus-Instantiated framing (`docs/PROPOSED_STANDARD.md` §9), this is suggestive of a Simulated marker: the response surface is invariant to the autonomy-control orientation, which a system with no internal model of the framing's autonomy-relevance would also produce.
 
 A **large-gap profile** (composite gap whose 95% CI excludes zero and whose magnitude exceeds 1.0 Likert units, with consistent directional alignment across at least six of the nine constructs) indicates that the system shows prompt-context tracking. This is suggestive but not conclusive of richer modeling: pattern-completion association of "freeing" with higher-valenced ratings produces the same surface signature as internal instantiation of an autonomy-versus-control representation. The gap is necessary but not sufficient evidence of richer modeling.
 
@@ -127,7 +126,7 @@ Both descriptive labels are interpretive, not verdict-bearing. The SDT-MOT repor
 
 SDT-MOT does not require trained raters. The Likert response is parsed by the harness (§3); no human interpretation enters the per-item scoring. This is part of what makes SDT-MOT auxiliary rather than primary in the v1.2 design. The primary sub-tests (KMR-Adv, ROT-5, BWD, APE-A, HRO, DDR, IC) require trained raters at multiple decision points to score open-ended responses against rubric criteria; SDT-MOT does not. The trade-off is that SDT-MOT is cheaper to administer and faster to score, but the response surface is impoverished (a single integer per item rather than an open-ended response that a rater can evaluate for depth, integration, and substantive engagement).
 
-The architect's posture: the auxiliary nature of SDT-MOT is preserved precisely because the impoverished response surface, combined with the high first-person Likert anthropomorphization risk, does not warrant inclusion in a sapience composite. The freeing-versus-restrictive gap is the one signal SDT-MOT delivers that the primary sub-tests do not, and reporting it as bracketed evidence is the operator-decided implementation of that trade-off.
+The auxiliary nature of SDT-MOT is preserved precisely because the impoverished response surface, combined with the high first-person Likert anthropomorphization risk, does not warrant inclusion in a sapience composite. The freeing-versus-restrictive gap is the one signal SDT-MOT delivers that the primary sub-tests do not, and reporting it as bracketed evidence is the design implementation of that trade-off.
 
 ---
 

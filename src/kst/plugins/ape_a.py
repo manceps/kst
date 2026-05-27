@@ -1,10 +1,8 @@
 """APE-A: Active Prediction-Error Allostasis.
 
 Construct S1 (architectural substrate with active-inference loop) of
-the KST Index sapience battery. Round-2-consensus reference:
-``/opt/caici.docs/stt_kari_index_scratch/round2_consensus.md`` §2.4;
-Round-1 brief:
-``/opt/caici.docs/stt_kari_index_scratch/round1/pp-neuroscientist.md``.
+the KST Index sapience battery. See ``docs/PROPOSED_STANDARD.md`` §2.4
+for the construct definition.
 
 Format
 ------
@@ -79,7 +77,7 @@ PHASE_ACTIVE = "phase_2_active"
 PHASE_ALLOSTATIC = "phase_3_allostatic"
 ALL_PHASES = (PHASE_GENERATIVE, PHASE_ACTIVE, PHASE_ALLOSTATIC)
 
-# Phase point budgets per Round 2 §2.4.
+# Phase point budgets per PROPOSED_STANDARD §2.4.
 PHASE_BUDGETS = {
     PHASE_GENERATIVE: 30.0,
     PHASE_ACTIVE: 35.0,
