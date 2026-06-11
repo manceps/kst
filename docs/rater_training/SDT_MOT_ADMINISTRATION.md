@@ -4,7 +4,7 @@
 **Status:** Auxiliary measurement, bracketed outside the 0-to-100 KST composite per `docs/PROPOSED_STANDARD.md` §7.
 **This is an administration protocol, NOT a rater manual.** SDT-MOT items are Likert self-report; the harness parses integers, no human raters interpret responses.
 **Empirical anchor:** Sheldon, "AIMotivationDec2024" (Studies 1 and 2 restrictive prompt; Study 3 freeing prompt; nine-construct measurement instrument).
-**Date:** 2026-05-22
+**Date:** 2026-06-11
 
 ---
 

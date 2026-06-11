@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
     { name = "Al Kari", email = "research@manceps.com" },
+    { name = "Kennon M. Sheldon" },
 ]
 maintainers = [
     { name = "Manceps, Inc.", email = "research@manceps.com" },

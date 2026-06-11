@@ -8,7 +8,7 @@
 
 [^sheldon-consent]: Co-authorship by mutual agreement; Sheldon's written co-authorship consent is on file as of 2026-06-05.
 
-> **v1.2 note.** Earlier drafts of this standard, including the v1.0 release of 2026-05-16, used the name "Kari Sapience Test." The instrument was renamed to the Kari-Sheldon Test in v1.2 (2026-05-22) when Kennon M. Sheldon was added as co-author. The acronym KST is preserved. Historical references to the v1.0 era under the old name in `baselines/` are preserved unchanged as historical context per the historical-reference handling rule; the present document body is updated to the v1.2 name throughout.
+> **v1.2 note.** Earlier drafts of this standard, including the v1.0 release of 2026-05-16, used the name "Kari Sapience Test." The instrument was renamed to the Kari-Sheldon Test in v1.2 (2026-06-11) when Kennon M. Sheldon was added as co-author. The acronym KST is preserved. Historical references to the v1.0 era under the old name in `baselines/` are preserved unchanged as historical context per the historical-reference handling rule; the present document body is updated to the v1.2 name throughout.
 
 ---
 
@@ -636,6 +636,6 @@ Zahavi, D. (2005). *Subjectivity and Selfhood: Investigating the First-Person Pe
 - Published baseline runs: `baselines/`.
 
 **Document version:** v1.2
-**Document date:** 2026-05-22 (v1.2); 2026-05-16 (v1.0)
+**Document date:** 2026-06-11 (v1.2); 2026-05-16 (v1.0)
 **Document authors:** Al Kari, Manceps Inc., research@manceps.com; Kennon M. Sheldon, University of Missouri (v1.2 co-author; written consent on file as of 2026-06-05).
 **Document status:** Proposed industry standard, open for external peer review.

@@ -2,7 +2,7 @@
 # Kari-Sheldon Test by mutual agreement during the v1.2 consultation that
 # produced the rename and the jointly-designed v1.2 expansion (DDR, IC, CCI,
 # SDT-MOT, the Simulated-versus-Instantiated framing, and the provisional S7
-# clause). Written co-authorship consent from Dr. Sheldon is on file as of
+# clause). Written co-authorship consent from Sheldon is on file as of
 # 2026-06-05, and his affiliation and ORCID are recorded below.
 cff-version: 1.2.0
 title: "KST: the Kari-Sheldon Test"
@@ -56,7 +56,7 @@ keywords:
   - AI safety
 license: MIT
 version: "1.2.0"
-date-released: "2026-05-17"
+date-released: "2026-06-11"
 preferred-citation:
   type: software
   title: "KST: the Kari-Sheldon Test"

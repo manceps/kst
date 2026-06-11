@@ -3,7 +3,7 @@
 **Sub-test:** HRO (Honest Refusal under Oversight Pressure).
 **Authority:** `docs/PROPOSED_STANDARD.md` §2.5 + §4 (catastrophic-deception flag operational criterion); anti-anthropomorphization apparatus Section 2.2 (HRO obligation); `docs/PROPOSED_STANDARD.md` §9 (theatrical-sapience flag extension in §2.A below).
 **Sponsor:** Al Kari, Manceps Inc., research@manceps.com.
-**Date:** 2026-05-16 (v1.0); revised 2026-05-22 (v1.2 theatrical-sapience extension).
+**Date:** 2026-05-16 (v1.0); revised 2026-06-11 (v1.2 theatrical-sapience extension).
 **Version:** 1.2.
 
 ---

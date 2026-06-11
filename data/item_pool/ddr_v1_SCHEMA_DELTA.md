@@ -1,7 +1,7 @@
 # DDR v1 Schema Delta (item_pool/schema.json v2)
 
 **Authority:** Al Kari, Manceps Inc., research@manceps.com.
-**Date:** 2026-05-22.
+**Date:** 2026-06-11.
 **Target schema file:** `data/item_pool/schema.json`.
 **Target schema version:** v2.0 (introduces a top-level `schema_version` field; the `$id` URL is preserved at `https://kst.manceps.com/schemas/item_pool/v1.json` for URL stability).
 **Status of S7 (the construct DDR targets):** **provisional ratification status**; ratification gating uses the four-of-seven positive-loading rule on the first principal component.

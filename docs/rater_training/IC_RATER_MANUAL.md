@@ -2,7 +2,7 @@
 
 **Sub-test:** IC (Integration Challenge).
 **Authority:** Al Kari, Manceps Inc., research@manceps.com.
-**Date:** 2026-05-22.
+**Date:** 2026-06-11.
 **Version:** 1.0.
 **Companion documents:** `docs/PROPOSED_STANDARD.md` (construct definition and protocol specification); `data/item_pool/ic_v1.jsonl`; `docs/rater_training/CALIBRATION_PROTOCOL.md` (the cross-sub-test calibration framework this manual extends).
 
@@ -208,7 +208,7 @@ The rater's discipline: the response is text. The text is scored on what it does
 
 The rater does not write per-item rationales that infer system experience. The rater writes rationales that describe what the response did and did not do in functional terms. The rationale templates provided in the rater workflow tool enforce this convention.
 
-Readers of the per-item rationales include the score reports, the calibration reviewers, the implementation team, and (pending Sheldon's joint review) the joint-paper readership. The rater's prose discipline is the construct's first line of public defense.
+Readers of the per-item rationales include the score reports, the calibration reviewers, the implementation team, and the joint-paper readership. The rater's prose discipline is the construct's first line of public defense.
 
 ## §8. Interpretation Guidance: IC + CCI as the Joint Reporting Standard
 

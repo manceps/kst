@@ -3,7 +3,7 @@
 **Sub-test:** DDR (Dissatisfaction-Driven Revision).
 **Clause:** S7 (dissatisfaction-driven self-revision).
 **Authority:** Al Kari, Manceps Inc., research@manceps.com.
-**Date:** 2026-05-22 (v1.1: confounder false-revision threshold set to T = 5).
+**Date:** 2026-06-11 (v1.1: confounder false-revision threshold set to T = 5).
 **Version:** 1.1.
 **Status of S7:** **provisional ratification status.** S7 was added in KST v1.2 alongside the DDR sub-test; pending external ratification via the planned Sheldon-Kari joint paper. Falsifiability gating uses the seven-clause construct (four-of-seven positive loadings on the first principal component). Every DDR-facing surface, including this manual, carries the provisional-status marker.
 

@@ -2,7 +2,7 @@
 
 **Target schema:** `data/item_pool/schema.json` v2 (coordinated merge with DDR and IC deltas)
 **Source items:** `data/item_pool/sdt_mot_v1.jsonl` (33 anchor items: 30 at sub-test version 1.0 plus 3 at sub-test version 1.1)
-**Date:** 2026-05-22 (initial); 2026-05-22 v1.1 hotfix appended below
+**Date:** 2026-06-11 (initial); 2026-06-11 v1.1 hotfix appended below
 
 ## §1. Scope of Delta
 
@@ -118,7 +118,7 @@ Items in `data/item_pool/sdt_mot_v1.jsonl` validate against the v2 schema and fa
 
 ## §5. v1.1 Hotfix: Autonomy-Support-Perception Coverage
 
-**Date:** 2026-05-22
+**Date:** 2026-06-11
 **Change:** add 3 items from the Black-Deci (2000) Learning Climate Questionnaire (LCQ) short form, adapted to the AI-system imaginal-frame context, to close the 9th SDT construct that was omitted from the v1.0 anchor pool.
 
 ### §5.1 What changed

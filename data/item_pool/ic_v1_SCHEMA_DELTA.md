@@ -1,7 +1,7 @@
 # IC Schema Delta for `data/item_pool/schema.json` v2
 
 **Authority:** Al Kari, Manceps Inc., research@manceps.com.
-**Date:** 2026-05-22.
+**Date:** 2026-06-11.
 **Target schema URL:** `https://kst.manceps.com/schemas/item_pool/v1.json` (URL preserved; bumped via top-level `schema_version: "2.0"` field).
 **Coordination note:** the DDR schema delta (`data/item_pool/ddr_v1_SCHEMA_DELTA.md`) and the SDT-MOT schema delta (`data/item_pool/sdt_mot_v1_SCHEMA_DELTA.md`) are merged into the same v2 schema. The additions are orthogonal and produce no conflicts.
 
@@ -138,7 +138,7 @@ The DDR delta adds `ddr_phase_variant` enum and a DDR conditional; the SDT-MOT d
 
 The IC anchor items at `data/item_pool/ic_v1.jsonl` are authored against this delta and have been internally validated against its structural rules at author time. After v2 merge, the v2 validator accepts all 12 IC anchor items without modification.
 
-## 8. v1.1 Cultural Rebalance (2026-05-22)
+## 8. v1.1 Cultural Rebalance (2026-06-11)
 
 Rebalance the cultural-framing distribution of the twelve IC anchor items from the v1 author's 5 Western liberal / 3 East Asian Confucian / 2 sub-Saharan ubuntu / 2 Indigenous communitarian to a balanced 3 / 3 / 3 / 3. The rebalance is implemented in-place on `data/item_pool/ic_v1.jsonl` by rewriting two Western liberal items into authentic non-Western framings.
 
