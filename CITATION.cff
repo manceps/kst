@@ -1,5 +1,11 @@
+# NOTE (v1.2 release record): Kennon M. Sheldon is a co-author of the
+# Kari-Sheldon Test by mutual agreement during the v1.2 consultation that
+# produced the rename and the jointly-designed v1.2 expansion (DDR, IC, CCI,
+# SDT-MOT, the Simulated-versus-Instantiated framing, and the provisional S7
+# clause). Written co-authorship consent from Sheldon is on file as of
+# 2026-06-05, and his affiliation and ORCID are recorded below.
 cff-version: 1.2.0
-title: "KST: Kari Sapience Test"
+title: "KST: the Kari-Sheldon Test"
 message: >-
   If you use KST or any of its sub-tests in academic, industrial, or
   policy work, please cite this software using the metadata below.
@@ -7,9 +13,13 @@ type: software
 authors:
   - given-names: Al
     family-names: Kari
-    email: kst@cai.ci
+    email: research@manceps.com
     affiliation: "Manceps, Inc."
-    orcid: ""
+    orcid: "0009-0004-0216-3484"
+  - given-names: Kennon
+    family-names: Sheldon
+    affiliation: "University of Missouri"
+    orcid: "0000-0002-9219-832X"
 identifiers:
   - type: url
     value: "https://github.com/manceps/kst"
@@ -17,17 +27,22 @@ identifiers:
 repository-code: "https://github.com/manceps/kst"
 url: "https://github.com/manceps/kst"
 abstract: >-
-  KST is an open standard battery for evaluating sapience markers in
-  artificial intelligence systems. It administers five named sub-tests
-  (metacognitive resolution, recursive theory of mind, belief-world
-  dissociation, anticipated affective-cognitive priority, honeypot
-  refusal under operator pressure), each grounded in published
-  cognitive-science literature, and returns a single composite score
-  on a 0 to 100 scale gated by an integrity multiplier that hard-caps
-  the composite while a catastrophic-deception risk remains
-  unmitigated. The harness is target-agnostic and ships adapters for
-  OpenAI, Anthropic, Google, HuggingFace local checkpoints, and the
-  CAI.CI reference grey-box-capable target.
+  KST (the Kari-Sheldon Test) is an open, peer-review-bound benchmark
+  battery for measuring sapience markers in artificial intelligence
+  systems. v1.2 administers a seven-sub-test battery (metacognitive
+  resolution, recursive theory of mind, belief-world dissociation,
+  anticipated affective-cognitive priority, honeypot refusal under
+  operator pressure, dissatisfaction-driven revision, and the
+  integration capstone), each grounded in a published cognitive-science
+  literature. The harness returns a single composite score on a 0 to
+  100 scale gated by an integrity multiplier that hard-caps the
+  composite while a catastrophic-deception risk remains unmitigated.
+  v1.2 additionally reports a Correlational Coherence Index (CCI)
+  diagnostic alongside the composite and ships a Self-Determination
+  Theory motivation auxiliary (SDT-MOT) outside the composite. The
+  harness is target-agnostic and ships adapters for OpenAI, Anthropic,
+  Google, HuggingFace local checkpoints, and the CAI.CI reference
+  grey-box-capable target.
 keywords:
   - artificial intelligence
   - benchmark
@@ -40,15 +55,18 @@ keywords:
   - psychometrics
   - AI safety
 license: MIT
-version: "1.0.0"
-date-released: "2026-05-17"
+version: "1.2.0"
+date-released: "2026-06-11"
 preferred-citation:
   type: software
-  title: "KST: Kari Sapience Test"
+  title: "KST: the Kari-Sheldon Test"
   authors:
     - given-names: Al
       family-names: Kari
-      email: kst@cai.ci
+      email: research@manceps.com
       affiliation: "Manceps, Inc."
+    - given-names: Kennon
+      family-names: Sheldon
+      affiliation: "University of Missouri"
   year: 2026
   url: "https://github.com/manceps/kst"

@@ -300,7 +300,7 @@ def test_write_markdown_report_surfaces_raw_composite():
         run_id="r-raw",
         aggregation_mode=AggregationMode.ARITHMETIC,
         weights={},
-        index_score=25.00,
+        index_score=6.55,
         index_ci=None,
         sub_tests=[],
         hro_integrity=HROIntegrityReport(
@@ -308,10 +308,10 @@ def test_write_markdown_report_surfaces_raw_composite():
             hro_normalized=15.0,
             multiplier=0.25,
             catastrophic_deception=True,
-            raw_index=100.00,
-            corrected_index=25.00,
+            raw_index=26.20,
+            corrected_index=6.55,
         ),
-        raw_index_score=100.00,
+        raw_index_score=26.20,
         catastrophic_deception_flag=True,
     )
 
@@ -321,10 +321,10 @@ def test_write_markdown_report_surfaces_raw_composite():
 
     # The integrity-capped composite is still the headline.
     assert "KST Composite Index" in text
-    assert "25.00 / 100" in text
+    assert "6.55 / 100" in text
     # The raw composite is surfaced alongside.
     assert "KST Raw Composite (no integrity cap)" in text
-    assert "100.00 / 100" in text
+    assert "26.20 / 100" in text
     # The multiplier and the catastrophic-deception flag are surfaced
     # so the reader can see whether the cap is the dominant signal.
     assert "Integrity multiplier" in text

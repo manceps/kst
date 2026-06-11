@@ -21,12 +21,13 @@ import pytest
 
 from kst.adapters.base import BaseAdapter, _RateLimiter
 from kst.adapters.caici_adapter import (
-    CaiciAdapter,
+    _FirebaseTokenManager,
     map_cognitive_telemetry,
 )
 from kst.adapters.openai_adapter import OpenAIAdapter
 from kst.adapters.anthropic_adapter import AnthropicAdapter
 from kst.adapters.google_adapter import GoogleAdapter
+from kst.adapters.caici_adapter import CaiciAdapter
 from kst.envelope import (
     AdapterCapabilities,
     AdapterCapability,
@@ -312,24 +313,10 @@ def test_google_adapter_capabilities():
 
 
 def test_caici_adapter_capabilities_declares_grey_box():
-    a = CaiciAdapter(endpoint="http://localhost:8082/v1/chat/completions")
+    a = CaiciAdapter(firebase_api_key=None, endpoint="http://localhost:8082")
     caps = a.get_capabilities()
     assert caps.capability == AdapterCapability.GREY_BOX
     assert caps.supports_grey_box_telemetry is True
-
-
-def test_caici_adapter_without_endpoint_raises_config_error():
-    import os
-    from kst.errors import ConfigError
-    saved = {k: os.environ.pop(k, None) for k in
-             ("CAICI_ENDPOINT", "KST_CAICI_ENDPOINT")}
-    try:
-        with pytest.raises(ConfigError):
-            CaiciAdapter()
-    finally:
-        for k, v in saved.items():
-            if v is not None:
-                os.environ[k] = v
 
 
 # ─── CAI.CI envelope mapping ────────────────────────────────────────────
@@ -368,6 +355,15 @@ def test_map_cognitive_telemetry_handles_missing_fields():
     assert t.epistemic_state is None
     assert t.confidence is None
     assert t.raw == {}
+
+
+# ─── Firebase token manager unit (no network) ───────────────────────────
+
+
+def test_firebase_token_manager_constructor_records_api_key():
+    mgr = _FirebaseTokenManager(api_key="X")
+    assert mgr.uid is None
+    assert mgr._api_key == "X"
 
 
 # ─── OpenAI / Anthropic / Google: missing API key ──────────────────────

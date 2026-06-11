@@ -4,16 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kst"
-version = "1.0.0"
-description = "KST: Kari Sapience Test, an open standard battery for evaluating sapience markers in language models."
+version = "1.2.0"
+description = "Kari-Sheldon Test (KST): an open peer-review-bound benchmark battery for measuring sapience markers in AI systems"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Al Kari", email = "kst@cai.ci" },
+    { name = "Al Kari", email = "research@manceps.com" },
+    { name = "Kennon M. Sheldon" },
 ]
 maintainers = [
-    { name = "Manceps, Inc.", email = "kst@cai.ci" },
+    { name = "Manceps, Inc.", email = "research@manceps.com" },
 ]
 keywords = [
     "ai",
@@ -44,6 +45,10 @@ classifiers = [
 dependencies = [
     "requests>=2.31",
     "numpy>=1.26",
+    "scipy>=1.11",
+    "scikit-learn>=1.4",
+    "PyYAML>=6.0",
+    "jsonschema>=4.0",
 ]
 
 [project.optional-dependencies]
@@ -68,6 +73,7 @@ dev = [
     "black>=24.0",
     "ruff>=0.4",
     "mypy>=1.8",
+    "pre-commit>=3.6",
 ]
 
 [project.urls]

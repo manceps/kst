@@ -10,7 +10,7 @@ Retry semantics inherit from :class:`BaseAdapter` but typically do
 not fire: local generation either succeeds or hits a hard CUDA / OOM
 error that is not productively retried.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations

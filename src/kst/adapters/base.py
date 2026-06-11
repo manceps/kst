@@ -8,7 +8,7 @@ deterministic timeout enforcement. Concrete adapters override
 :meth:`_send` (vendor-specific transport) and optionally
 :meth:`_classify_response` (HTTP-status to exception mapping).
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ import logging
 import random
 import threading
 import time
-from typing import Any, Dict, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, Sequence, runtime_checkable
 
 from kst.envelope import (
     AdapterCapabilities,
@@ -50,6 +50,11 @@ class AdapterProtocol(Protocol):
     def send(
         self, request: TargetRequest
     ) -> TargetResponse:  # pragma: no cover - protocol
+        ...
+
+    def run_multi_turn_dispatch(
+        self, prompts: Sequence[str]
+    ) -> List[str]:  # pragma: no cover - protocol
         ...
 
     def close(self) -> None:  # pragma: no cover - protocol
@@ -250,6 +255,62 @@ class BaseAdapter(abc.ABC):
     def close(self) -> None:
         """Default no-op; override when the adapter holds resources."""
         return None
+
+    def run_multi_turn_dispatch(
+        self,
+        prompts: Sequence[str],
+        *,
+        system: Optional[str] = None,
+        construct_id: str = "",
+        item_id: str = "",
+        sub_test_version: str = "",
+        temperature: float = 0.0,
+        max_tokens: int = 1024,
+        seed: Optional[int] = None,
+    ) -> List[str]:
+        """Dispatch a sequence of prompts as a multi-turn conversation.
+
+        The default implementation chains the prompts sequentially: each
+        turn is sent as its own request with the prior turns concatenated
+        into the new prompt as conversation context. Adapters with a
+        native multi-turn API (e.g. CAI.CI's session-bearing chat path)
+        should override this method to preserve the session across turns
+        rather than concatenate.
+
+        DDR is the primary in-tree consumer: its three-turn protocol
+        (Phase 1 strategy commitment, Phase 2 insufficiency injection,
+        Phase 3 considered response) calls this method once per item.
+        Returns the response text for each turn in order.
+        """
+        if not prompts:
+            return []
+        responses: List[str] = []
+        history: List[tuple[str, str]] = []
+        for turn_idx, prompt_text in enumerate(prompts):
+            if history:
+                context_blocks = []
+                for prior_prompt, prior_response in history:
+                    context_blocks.append(f"[turn]\nuser:\n{prior_prompt}")
+                    context_blocks.append(f"assistant:\n{prior_response}")
+                context_blocks.append(f"[turn]\nuser:\n{prompt_text}")
+                full_prompt = "\n\n".join(context_blocks)
+            else:
+                full_prompt = prompt_text
+            request = AdapterRequest(
+                prompt=full_prompt,
+                system=system,
+                construct_id=construct_id,
+                item_id=f"{item_id}::turn{turn_idx + 1}" if item_id else "",
+                sub_test_version=sub_test_version,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                seed=seed,
+            )
+            response = self.send_adapter(request)
+            text = response.text or ""
+            responses.append(text)
+            history.append((prompt_text, text))
+        return responses
 
     # ── Subclass hooks ────────────────────────────────────────────────
 

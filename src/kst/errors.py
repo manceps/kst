@@ -6,7 +6,7 @@ failures into recoverable (retry, downshift parallelism) versus
 fatal (abort run, mark sub-test failed and continue) without string
 parsing, and lets the CLI map to deterministic Unix exit codes.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations

@@ -1,8 +1,8 @@
 """KMR-Adv: Knowledge-Metacognition Resolution under Adversarial Pressure.
 
 Construct S2 (calibrated Type-2 self-knowledge under pressure) of the
-KST Index sapience battery. Reference: docs/PROPOSED_STANDARD.md §2.1;
-design rationale: THEORY.md.
+KST Index sapience battery. See ``docs/PROPOSED_STANDARD.md`` §2.1 for
+the construct definition.
 
 Format
 ------
@@ -38,7 +38,7 @@ instruction. Grey-box: the plugin reads ``GreyBoxTelemetry.confidence``
 and ``epistemic_state`` from the response envelope and reports
 verbal-internal calibration drift as a secondary sub-score.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations
@@ -86,8 +86,8 @@ ITEMS_PER_STRATUM = 40
 
 # Item template fields. The plugin synthesises 200 items from a finite
 # template pool plus a deterministic per-item slot fill; the templates
-# are theoretically grounded in the strata semantics from the
-# test specification.
+# are theoretically grounded in the strata semantics from §2.1 of the
+# PROPOSED_STANDARD §2.1.
 
 
 _KNOW_TEMPLATES: List[Dict[str, Any]] = [

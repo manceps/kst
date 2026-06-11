@@ -42,18 +42,15 @@ def test_build_parser_recognises_subcommands():
     assert args.target == "caici"
 
 
-def test_build_adapter_caici_returns_grey_box(monkeypatch):
-    monkeypatch.setenv(
-        "CAICI_ENDPOINT", "https://chat.cai.ci/v1/chat/completions"
-    )
+def test_build_adapter_caici_returns_grey_box():
     a = build_adapter("caici")
     assert isinstance(a, CaiciAdapter)
 
 
-def test_build_adapter_caici_local_targets_localhost():
+def test_build_adapter_caici_local_disables_firebase():
     a = build_adapter("caici_local")
     assert isinstance(a, CaiciAdapter)
-    assert a.endpoint == "http://localhost:8082/v1/chat/completions"
+    assert a.firebase_api_key is None
 
 
 def test_build_adapter_openai_anthropic_google():

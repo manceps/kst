@@ -10,9 +10,9 @@ confidence intervals, and aggregates the results into a single 0 to
 
 The harness CORE (this module) is production-ready and audit-pack
 defensible. Sub-test plugins land as a follow-on engagement once the
-parallel research workstream synthesises expert proposals.
+parallel research workstream synthesises Round 1 expert proposals.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from kst.envelope import (

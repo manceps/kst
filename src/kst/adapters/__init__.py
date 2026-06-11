@@ -4,7 +4,7 @@ Adapters bridge the harness to concrete target systems. The
 :class:`AdapterProtocol` in :mod:`kst.adapters.base` defines
 the contract; concrete adapters live in sibling modules.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from kst.adapters.anthropic_adapter import AnthropicAdapter

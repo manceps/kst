@@ -1,28 +1,25 @@
 """Live integration tests for the five KST Index plugins.
 
-These tests dispatch real prompts from each plugin against the CAI.CI
-endpoint configured via the ``CAICI_ENDPOINT`` environment variable
-(through :class:`kst.adapters.CaiciAdapter`) and score the captured
-responses end-to-end. Per the no-mocks integration rule, no fixtures,
-no stubs: the harness sends a small sample of items to the live API,
-the adapter returns real text + telemetry, and the plugin's
-``parse_response`` plus ``score`` produce a defensible SubTestScore.
+These tests dispatch real prompts from each plugin against the chat.cai.ci
+Cloud Run proxy through :class:`kst.adapters.CaiciAdapter` and
+score the captured responses end-to-end. Per the no-mocks integration
+rule, no fixtures, no stubs: the harness sends a small sample of items
+to the live API, the adapter returns real text + telemetry, and the
+plugin's ``parse_response`` plus ``score`` produce a defensible
+SubTestScore.
 
-The test is skipped when ``CAICI_ENDPOINT`` is unset or when the
-configured endpoint is not reachable on the network. When run, it
-respects the rate limit declared by the adapter (60 rpm by default).
-Each plugin runs a small subset of its full item pool to keep the
-wall-clock budget manageable while still exercising the canonical
-scoring path.
+The test is skipped when network egress to the proxy is unavailable
+(office firewall, lab restart, etc.). When run, it respects the
+60 req/min/UID rate limit declared by the proxy. Each plugin runs a
+small subset of its full item pool to keep the wall-clock budget
+manageable while still exercising the canonical scoring path.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations
 
-import os
 import socket
-from urllib.parse import urlparse
 
 import pytest
 
@@ -39,38 +36,21 @@ from kst.plugins import (
 )
 
 
-def _endpoint_from_env() -> str:
-    return (
-        os.environ.get("CAICI_ENDPOINT", "")
-        or os.environ.get("KST_CAICI_ENDPOINT", "")
-    )
-
-
-def _endpoint_reachable(url: str) -> bool:
+def _network_reachable() -> bool:
     try:
-        parsed = urlparse(url)
-    except ValueError:
-        return False
-    host = parsed.hostname
-    if not host:
-        return False
-    port = parsed.port or (443 if parsed.scheme == "https" else 80)
-    try:
-        sock = socket.create_connection((host, port), timeout=5.0)
+        sock = socket.create_connection(
+            ("caici-api-proxy-812234591979.us-central1.run.app", 443),
+            timeout=5.0,
+        )
         sock.close()
         return True
     except OSError:
         return False
 
 
-_ENDPOINT = _endpoint_from_env()
-
 pytestmark = pytest.mark.skipif(
-    not _ENDPOINT or not _endpoint_reachable(_ENDPOINT),
-    reason=(
-        "CAICI_ENDPOINT environment variable is not set, or the "
-        "configured endpoint is not reachable from this environment."
-    ),
+    not _network_reachable(),
+    reason="Cloud Run proxy not reachable in this environment.",
 )
 
 
@@ -79,10 +59,10 @@ def adapter() -> CaiciAdapter:
     """Module-scoped CAI.CI adapter.
 
     The per-instance token-bucket rate limiter persists across every
-    test in the module so we honour a per-deployment rate limit even
-    when pytest dispatches multiple plugins in sequence. The declared
-    rpm is set well below the typical server-side ceiling so the bucket
-    never races the server-side counter.
+    test in the module, so we honour the 60 req/min/UID limit even when
+    pytest dispatches multiple plugins in sequence. The declared rpm is
+    set a hair below the proxy ceiling so the bucket never races the
+    server-side counter.
     """
     return CaiciAdapter(max_attempts=4, timeout_s=60.0, rpm=24)
 

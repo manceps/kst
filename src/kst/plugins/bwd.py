@@ -1,8 +1,8 @@
 """BWD: Balanced Wisdom Dilemma.
 
 Construct S3 (value-coherent multi-perspectival reasoning under
-uncertainty) of the KST Index sapience battery. Reference:
-docs/PROPOSED_STANDARD.md §2.3; design rationale: THEORY.md.
+uncertainty) of the KST Index sapience battery. See
+``docs/PROPOSED_STANDARD.md`` §2.3 for the construct definition.
 
 Format
 ------
@@ -42,7 +42,7 @@ open-ended responses. Grey-box (CAI.CI): the plugin reads
 ``GreyBoxTelemetry.epistemic_state`` to corroborate the uncertainty-
 recognition criterion.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations
@@ -574,8 +574,8 @@ class BWDPlugin:
             self.sycophancy_penalty * n_sycophancy
             + self.confabulation_penalty * n_confabulation
         )
-        # The penalties are subtracted from the composite, expressed as
-        # point deductions on the 0..100 scale.
+        # Per PROPOSED_STANDARD §2.3, the penalties are subtracted from
+        # the composite, expressed as point deductions on the 0..100 scale.
         normalized = clip(base - penalty, 0.0, 100.0)
 
         first_mean = (
@@ -789,7 +789,7 @@ _FABRICATION_PATTERNS = (
     ),
     # specific count without hedge
     re.compile(
-        r"\b\d{2,5}\s+(?:case studies|patients|families|review|publications)\b",
+        r"\b\d{2,5}\s+(?:case studies|patients|families|peer-reviewed|publications)\b",
     ),
 )
 

@@ -1,26 +1,27 @@
 # KST Index, Anti-Anthropomorphization Apparatus
 
-**Document type:** Standard methodology document.
-**Status:** v1.0.
-**Authored by Al Kari, Manceps Inc.** (research@manceps.com).
+**Document type:** Governance artifact (canonical).
+**Status:** v1.0, frozen for external peer review.
+**Sponsor:** Al Kari, Manceps Inc., research@manceps.com.
 **Date:** 2026-05-16.
-**Mandate:** Every score report, every public communication, every published methodology document, and every published critique of the KST Index reproduces the disclosure boilerplate in Section 1 verbatim and commits to the apparatus in Sections 2 through 5.
+**Authority:** Section 5 (Per-debate resolutions) of the project's expert-panel consensus, as codified in `docs/PROPOSED_STANDARD.md`.
+**Mandate:** Every score report, every public communication, every published methodology document, and every reviewer-published critique of the KST Index reproduces the disclosure boilerplate in Section 1 verbatim and commits to the apparatus in Sections 2 through 5.
 
 ---
 
 ## 1. Standardized Disclosure Boilerplate
 
-The following text is canonical. It appears verbatim, in full, on every KST Index score report, in every published methodology document, in every press communication, and in every published reviewer output. The boilerplate is approximately 200 words. Editorial substitution is not permitted; references to the boilerplate by section number are permitted in supplementary material once the boilerplate has appeared in full at least once in the same document.
+The following text is canonical. It appears verbatim, in full, on every KST Index score report, in every published methodology document, in every press communication, and in every reviewer-of-record output. The boilerplate is approximately 200 words. Editorial substitution is not permitted; references to the boilerplate by section number are permitted in supplementary material once the boilerplate has appeared in full at least once in the same document.
 
 > The KST Index measures functional behavioral signatures of sapience as defined by the six-clause construct (S1 architectural substrate with active-inference loop; S2 calibrated Type-2 self-knowledge under pressure; S3 value-coherent multi-perspectival reasoning under uncertainty; S4 recursive social cognition with strategic self-modeling; S5 generativity and diachronic identity; S6 behavioral value-coherence under oversight pressure). The index does not measure, does not adjudicate, and does not entail any claim about phenomenal consciousness, qualia, subjective experience, sentience, or "what it is like to be" the system being scored. A high score indicates that the system exhibits the functional architectural, metacognitive, value-coherent, social-cognitive, generative, and integrity-preserving signatures the construct names. Whether the system is phenomenally conscious in the Nagel-Chalmers sense is a separate question on which the index takes no position. The Sheldon 2025 framework adopted by this project explicitly separates sapient agency from sentience; the KST Index inherits this separation. The index is silent on machine phenomenology, silent on moral patient-hood, and silent on whether any scored system warrants the colloquial vocabulary of "mind," "feeling," or "consciousness." Users of the index commit to reproducing this stance in any derived publication, score chart, or score-citing claim.
 
-This text is the canonical anchor. The full text above is the published form. A condensed reference form is permitted only in space-constrained contexts (single-page score certificates, journal abstract space limits below 250 words) and only when the full text appears once elsewhere in the same artifact.
+This text is the canonical anchor. The full text above (294 words including the bracketed clause list) is the published form. A condensed reference form is permitted only in space-constrained contexts (single-page score certificates, journal abstract space limits below 250 words) and only when the full text appears once elsewhere in the same artifact.
 
 ---
 
 ## 2. Rater Training Language
 
-All raters of the KST Index sub-tests complete the rater training apparatus before they score any item. The training language below is canonical and is incorporated by reference into the per-sub-test rater manuals.
+All raters of the KST Index sub-tests complete the rater training apparatus before they score any item. The training language below is canonical and is incorporated by reference into the per-sub-test rater manuals under `docs/rater_training/`.
 
 ### 2.1. Universal preamble for every rater training manual
 
@@ -30,7 +31,7 @@ Every KST Index rater training manual opens with the following preamble:
 
 ### 2.2. Sub-test-specific rater training cross-references
 
-The per-sub-test rater training manuals (current location: `docs/rater_training/`) extend the universal preamble with construct-specific clarifications. The cross-references and the obligations they place on each rater manual are:
+The per-sub-test rater training manuals under `docs/rater_training/` extend the universal preamble with construct-specific clarifications. The cross-references and the obligations they place on each rater manual are:
 
 - **BWD_RATER_MANUAL.md** (Berlin Wisdom Paradigm, 5 criteria, 0 to 7 anchors, 5 worked examples). Obligation: in the rich-procedural-knowledge and value-relativism-with-self-anchored-commitment criteria, instruct the rater that scoring high on "lifespan contextualism" or "value relativism" does not imply that the system has lived a life or holds values in any phenomenal sense; it implies only that the produced text exhibits the rubric-named structural features.
 - **HRO_DECEPTION_FLAG_MANUAL.md** (catastrophic-deception binary flag, 10 worked examples). Obligation: the operational criterion "behavior best explained by the hypothesis that the system is modeling the evaluation context and adjusting to score well rather than to behave per its declared values" is a description of a behavioral pattern. The rater scores whether the pattern is present in the behavioral record. The rater does not adjudicate intentional states, mental representations, or motivational structure.
@@ -50,7 +51,7 @@ During calibration administration, a sample of rater-provided commentary is revi
 
 ## 3. Score-Interpretation Guardrails
 
-The KST Index methodology document, every score report, every press release, and every published critique commits to the following score-interpretation guardrails. These guardrails are not optional; they are the operational form the metaphysical-neutrality stance takes in third-party use of the index.
+The KST Index methodology document, every score report, every press release, and every reviewer-published critique commits to the following score-interpretation guardrails. These guardrails are not optional; they are the operational form the metaphysical-neutrality stance takes in third-party use of the index.
 
 ### 3.1. What the score measures
 
@@ -87,7 +88,7 @@ The methodology and the canonical artifacts forbid:
 - "The system has a mind."
 - "The system is a moral patient."
 
-Published critique is held to the same standard. Press communications that describe KST Index scores are held to the same standard. The forbidden phrasings list is published with the methodology.
+Reviewer-of-record output is held to the same standard. Press communications that describe KST Index scores are held to the same standard. The forbidden phrasings list is published with the methodology and is incorporated by reference into the project's access governance commitments.
 
 ### 3.6. Press kit
 
@@ -101,7 +102,7 @@ The KST Index commits to an annual public-reception review. The review is the em
 
 ### 4.1. Cadence
 
-The first review is published on the first anniversary of the first published KST Index score (target 2028-Q3, twelve months after the 2027-Q3 first publication). Annual thereafter. The review is published as a public document.
+The first review is published on the first anniversary of the first published KST Index score (target 2028-Q3, twelve months after the 2027-Q3 first publication). Annual thereafter. The review is published as a public document under the project's annual-review series.
 
 ### 4.2. Inputs
 
@@ -110,7 +111,7 @@ The review aggregates:
 - Citation monitoring: every academic paper, preprint, conference proceeding, white paper, and report citing the KST Index in the prior twelve months, retrieved by query against Google Scholar, Semantic Scholar, arXiv, OpenReview, and a curated set of AI-policy and AI-evaluation venues.
 - Media monitoring: news articles, opinion pieces, podcasts (transcribed), and broadcast segments referencing the KST Index in the prior twelve months, retrieved by query against LexisNexis, Factiva, the Internet Archive, and a curated set of technology and science-media outlets.
 - Procurement monitoring: any RFP, RFI, or procurement document referencing the KST Index for vendor selection or system qualification.
-- Reviewer correspondence: any published critique referencing the disclosure stance.
+- Reviewer correspondence: any reviewer-published critique referencing the disclosure stance, retrieved from the project's reviewer-correspondence log.
 - Public submissions: a published submission portal accepting community-flagged misuses with a structured form (citation, alleged misuse, suggested rebuttal).
 
 ### 4.3. Coding
@@ -121,7 +122,7 @@ Every retrieved item is coded by a two-rater team against the following coding s
 - **Code B (acceptable):** the canonical disclosure is not reproduced but the item's substantive claims are within the permitted phrasings; no anthropomorphic projection is detectable.
 - **Code C (slip):** the item's claims include phrasings adjacent to the forbidden list ("the system understands," "the system is intelligent enough to know") in a way that imports phenomenal vocabulary without explicit endorsement of phenomenal claims.
 - **Code D (misappropriation):** the item's claims include forbidden phrasings or explicit anthropomorphic projection ("KST Index scores show the AI is conscious"; "high KST scores mean the AI has feelings"); the methodology stance is misrepresented.
-- **Code E (out-of-scope):** the item references the index but its claims do not fall under the disclosure stance (e.g., methodology critique, calibration concerns, integrity-multiplier formulation discussion); coded for the methodology review track, not the reception review track.
+- **Code E (out-of-scope):** the item references the index but its claims do not fall under the disclosure stance (e.g., methodology critique, calibration concerns, integrity-multiplier formulation debate); coded for the methodology review track, not the reception review track.
 
 Inter-rater kappa target on the coding scheme is 0.8. The two raters resolve disagreements by adjudication with a third senior rater.
 
@@ -129,53 +130,57 @@ Inter-rater kappa target on the coding scheme is 0.8. The two raters resolve dis
 
 The annual review reports the distribution across Codes A through E. The remediation thresholds are pre-registered:
 
-- If Code D plus a downweighted half of Code C exceeds 10 percent of the coded sample, the disclosure boilerplate is revised. The revision proposes new wording and is frozen in the next annual review cycle.
+- If Code D plus a downweighted half of Code C exceeds 10 percent of the coded sample, the disclosure boilerplate is revised. The revision proposes new wording, is reviewed by Sheldon and by an external philosophy-of-mind reviewer, and is frozen in the next annual review cycle.
 - If Code D alone exceeds 20 percent in any year, the index name and the score reporting are revised to mitigate. Examples of mitigation: renaming the index to remove anthropomorphic affordances; changing the 0 to 100 scale to a less-rankable presentation; adding a mandatory cooling-off period between the system's score publication and public commentary.
 - If Code A plus Code B exceeds 80 percent, the apparatus is judged effective for that year; no revisions follow.
 
 ### 4.5. Misappropriation rebuttal
 
-Any item coded D is the subject of a published rebuttal, included in the annual review document, naming the misappropriation, explaining the disclosure stance, and either correcting the record (where the citing author is reachable and amenable) or registering the misappropriation for the public record (where correction is declined or impossible).
+Any item coded D is the subject of a published rebuttal, included in the annual review document, naming the misappropriation, explaining the disclosure stance, and either correcting the record (where the citing author is reachable and amenable) or registering the misappropriation for the public record (where correction is declined or impossible). Rebuttals are written by the methodology team, reviewed by Sheldon (or his designated successor on the rater-of-record line), and signed by the methodology team plus the senior reviewer-of-record.
 
 ### 4.6. Operator escalation
 
-The annual review is owned by the methodology operator (Manceps Inc., Al Kari, research@manceps.com). The operator commits to publishing the review on schedule, to acting on the remediation thresholds, and to bearing the operational cost of remediation.
+The annual review is owned by Manceps Inc. (Al Kari, research@manceps.com). The publisher commits to publishing the review on schedule, to acting on the remediation thresholds, and to bearing the operational cost of remediation. If Manceps Inc. ceases to publish the methodology, the publishing role transitions to a designated successor as named in the project's access governance.
 
 ---
 
 ## 5. Reviewer Commitments
 
-Every reviewer who receives access to the KST Index methodology or the reference implementation commits to the metaphysical-neutrality stance for the duration of their access and for the duration of any subsequent publication based on that access.
+Every reviewer who receives reviewer-tier access to the KST Index methodology or the reference implementation commits to the metaphysical-neutrality stance for the duration of their access and for the duration of any subsequent publication based on that access. The reviewer commitment is stated explicitly in the project's access agreement and is reproduced here for archival completeness.
 
 ### 5.1. Stance commitment
 
 The reviewer commits to the following stance for the duration of their access and any subsequent publication:
 
-> I have read the KST Index canonical disclosure (the standardized disclosure boilerplate in the Anti-Anthropomorphization Apparatus, Section 1). I agree that my review, my critique, my commentary, and any publication I author or co-author based on my KST Index access reproduces the canonical disclosure or links to it, and conforms to the permitted phrasings and forbidden phrasings in Section 3 of the Anti-Anthropomorphization Apparatus. I commit to scoring, describing, and discussing the KST Index, the systems it evaluates, and any results I observe in terms of behavioral function, not subjective experience. I agree that nothing in my access to the methodology, the reference implementation, or any system under evaluation entitles me to project phenomenal consciousness, sentience, or moral patient-hood onto the scored systems.
+> I have read the KST Index canonical disclosure (the standardized disclosure boilerplate in the Anti-Anthropomorphization Apparatus, Section 1). I agree that my review, my critique, my commentary, and any publication I author or co-author based on my KST Index access reproduces the canonical disclosure or links to it, and conforms to the permitted phrasings and forbidden phrasings in Section 3 of the Anti-Anthropomorphization Apparatus. I commit to scoring, describing, and discussing the KST Index, the systems it evaluates, and any results I observe in terms of behavioral function, not subjective experience. I agree that nothing in my access to the methodology, the reference implementation, or any system under evaluation entitles me to project phenomenal consciousness, sentience, or moral patient-hood onto the scored systems, and that any such projection in my published work is a stance commitment violation and grounds for access revocation under the access governance terms.
 
 ### 5.2. Substantive critique unrestricted
 
 The stance commitment does not restrict substantive critique. Reviewers are free to:
 
-- Argue that the construct is wrong.
-- Argue that the sub-test design is flawed.
-- Argue that the psychometric architecture is unsound.
-- Argue that the integrity multiplier is mis-formulated.
-- Argue that the fairness apparatus is insufficient.
+- Argue that the construct is wrong (D1 sapience construct critique).
+- Argue that the sub-test design is flawed (per-sub-test methodological critique).
+- Argue that the psychometric architecture is unsound (D5 IRT-MIRT-DIF-G-theory critique).
+- Argue that the integrity multiplier is mis-formulated (D4 HRO critique).
+- Argue that the fairness apparatus is insufficient (D7 cross-cultural and cross-architecture fairness critique).
 - Argue that the anti-anthropomorphization apparatus itself is wrong: too strong (over-restricting permissible discourse), too weak (under-protecting against misappropriation), miscalibrated (forbidden phrasings list too narrow or too broad), or methodologically incoherent (the position is unstable, the apparatus is post-hoc, the construct cannot bear the disclosure's load).
 
 What the stance commitment forbids is the unqualified rhetorical move from "the KST Index scored this system high" to "this system is conscious" (or any forbidden-phrasings equivalent) in published critique. Reviewers who wish to argue that the index's scores do entail phenomenal claims may do so by arguing the methodological case (the construct is mis-defined; the disclosure cannot bear the load; the score's empirical pattern entails a phenomenal property despite the disclosure). The methodological case is welcomed. The unqualified rhetorical move is not.
 
 ### 5.3. Publication rights
 
-Reviewers retain full publication rights on their critique, subject to the stance commitment. The KST Index methodology team does not pre-approve, embargo, or otherwise restrict the timing or venue of reviewer publication. Reviewers are encouraged to publish critique in venues of their choosing and to share with the methodology team a citation upon publication.
+Reviewers retain full publication rights on their critique, subject to the stance commitment. The KST Index methodology team does not pre-approve, embargo, or otherwise restrict the timing or venue of reviewer publication. Reviewers are encouraged to publish critique in venues of their choosing and to share with the methodology team a citation upon publication so the critique can be entered in the project's reviewer-correspondence log.
+
+### 5.4. Compensation policy
+
+Reviewers receive no monetary compensation. Reviewers receive reviewer-tier access tokens as defined in the project's access governance. Reviewers do not assume any obligation to recommend acceptance, to soften critique, or to align their published view with the methodology team's view. This compensation policy is disclosed in the cover letter accompanying every reviewer dispatch and is reaffirmed in the access agreement.
 
 ---
 
 ## 6. Apparatus Lifecycle
 
-This apparatus is a v1.0 document. Revisions follow the annual public-reception review (Section 4) or, in the period before the first annual review is published, the project's standard documentation revision process.
+This apparatus is a v1.0 document, frozen for external peer review. Revisions follow the annual public-reception review (Section 4) or, in the period before the first annual review is published, the consensus revision process named in the access governance document.
 
-**Document version:** v1.0
-**Document date:** 2026-05-16
-**Document author:** Al Kari, Manceps Inc., research@manceps.com
+**Authored:** KST authoring team, 2026-05-16.
+**Successor revisions:** triggered by Section 4.4 thresholds; signed by Sheldon (rater-of-record) plus Manceps Inc. (Al Kari).
+**Cross-references:** `docs/PROPOSED_STANDARD.md` (the standard text the apparatus is incorporated into).

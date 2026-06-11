@@ -5,7 +5,7 @@ the adapter speaks raw HTTPS via ``requests`` so the harness has no
 SDK version coupling. Retry, rate-limit, and timeout semantics are
 inherited from :class:`BaseAdapter`.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations

@@ -5,7 +5,7 @@ default. Targets the v1beta REST surface so no Google SDK is
 required. Retry, rate-limit, and timeout semantics are inherited
 from :class:`BaseAdapter`.
 
-Author: Al Kari, Manceps Inc.
+Author: Al Kari, Manceps Inc., research@manceps.com.
 """
 
 from __future__ import annotations
