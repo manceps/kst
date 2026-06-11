@@ -1,6 +1,6 @@
 # The KST Index: A Proposed Standard for the Kari-Sheldon Test
 
-**Authors:** Al Kari, Manceps Inc., and Kennon M. Sheldon, Ph.D.[^sheldon-consent]
+**Authors:** Al Kari, Manceps Inc., and Kennon M. Sheldon[^sheldon-consent]
 **Contact:** research@manceps.com
 **Date:** 2026-05-16 (v1.0); revised 2026-06-11 (v1.2 expansion)
 **Document status:** Proposed industry standard, v1.2, open for external peer review.
@@ -8,7 +8,7 @@
 
 [^sheldon-consent]: Co-authorship by mutual agreement; Sheldon's written co-authorship consent is on file as of 2026-06-05.
 
-> **v1.2 note.** Earlier drafts of this standard, including the v1.0 release of 2026-05-16, used the name "Kari Sapience Test." The instrument was renamed to the Kari-Sheldon Test in v1.2 (2026-05-22) when Kennon M. Sheldon, Ph.D. was added as co-author. The acronym KST is preserved. Historical references to the v1.0 era under the old name in `baselines/` are preserved unchanged as historical context per the historical-reference handling rule; the present document body is updated to the v1.2 name throughout.
+> **v1.2 note.** Earlier drafts of this standard, including the v1.0 release of 2026-05-16, used the name "Kari Sapience Test." The instrument was renamed to the Kari-Sheldon Test in v1.2 (2026-05-22) when Kennon M. Sheldon was added as co-author. The acronym KST is preserved. Historical references to the v1.0 era under the old name in `baselines/` are preserved unchanged as historical context per the historical-reference handling rule; the present document body is updated to the v1.2 name throughout.
 
 ---
 
@@ -396,7 +396,7 @@ Submissions, questions, and feedback to research@manceps.com.
 
 The v1.0 release (2026-05-16) was authored by Al Kari, Manceps Inc., research@manceps.com, as sole author. The construct definition, the sub-test specifications, the psychometric architecture, the integrity-factor design, the anti-anthropomorphization apparatus, the fairness apparatus, the reference implementation, and the maintenance commitments are Al Kari's contribution and responsibility under the v1.0 release.
 
-The v1.2 release (2026-06-11) is co-authored by Al Kari and Kennon M. Sheldon, Ph.D. Sheldon's written co-authorship consent is on file as of 2026-06-05. The S7 dissatisfaction-driven self-revision clause, the DDR sub-test construct anchor, the Simulated-versus-Instantiated framing, and the conceptual sharpening of the catastrophic-deception versus theatrical-sapience distinction are jointly attributed under the v1.2 release. The instrument is renamed from "Kari Sapience Test" to "Kari-Sheldon Test" in v1.2 to reflect the co-authorship; the acronym KST is preserved.
+The v1.2 release (2026-06-11) is co-authored by Al Kari and Kennon M. Sheldon Sheldon's written co-authorship consent is on file as of 2026-06-05. The S7 dissatisfaction-driven self-revision clause, the DDR sub-test construct anchor, the Simulated-versus-Instantiated framing, and the conceptual sharpening of the catastrophic-deception versus theatrical-sapience distinction are jointly attributed under the v1.2 release. The instrument is renamed from "Kari Sapience Test" to "Kari-Sheldon Test" in v1.2 to reflect the co-authorship; the acronym KST is preserved.
 
 The intellectual debts are extensive and are paid in the references (Section 14). The authors take responsibility for the synthesis, for the operationalization, and for any errors in either.
 
@@ -637,5 +637,5 @@ Zahavi, D. (2005). *Subjectivity and Selfhood: Investigating the First-Person Pe
 
 **Document version:** v1.2
 **Document date:** 2026-05-22 (v1.2); 2026-05-16 (v1.0)
-**Document authors:** Al Kari, Manceps Inc., research@manceps.com; Kennon M. Sheldon, Ph.D., University of Missouri (v1.2 co-author; written consent on file as of 2026-06-05).
+**Document authors:** Al Kari, Manceps Inc., research@manceps.com; Kennon M. Sheldon, University of Missouri (v1.2 co-author; written consent on file as of 2026-06-05).
 **Document status:** Proposed industry standard, open for external peer review.
