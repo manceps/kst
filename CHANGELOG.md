@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - 30-system calibration administration round on the v1.2 seven-sub-test battery.
 - Localization pass for the item pool (English-first; community contributions invited).
 
-## [1.2.0] - 2026-MM-DD (pending joint review)
+## [1.2.0] - 2026-06-11
 
 ### Renamed
 
@@ -36,7 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - PROPOSED_STANDARD acquires a new top-level §9 ("Simulated-versus-Instantiated Framing") between the prior §8 (Fairness Apparatus) and the prior §9 (Reference Implementation). All subsequent top-level sections renumber forward by one: prior §9 to §10, §10 to §11 (including §10.A to §11.A and §10.A.1 to §11.A.1), §11 to §12, §12 to §13, §13 to §14, §14 to §15.
 - PROPOSED_STANDARD abstract amended to name the seven-sub-test composite, S7 with provisional ratification status, the CCI, the SDT-MOT auxiliary, and the Simulated-versus-Instantiated framing.
-- PROPOSED_STANDARD author block extended to include Kennon M. Sheldon, Ph.D. (footnoted: co-authorship pending joint review of the v1.2 build-out). Sedikides and Skowronski (1997) added to the references list as the symbolic-self framing source.
+- PROPOSED_STANDARD author block extended to include Kennon M. Sheldon, Ph.D. (footnoted: co-authorship by mutual agreement; Sheldon's written co-authorship consent is on file as of 2026-06-05). Sedikides and Skowronski (1997) added to the references list as the symbolic-self framing source.
 - README "What KST does not do" section renamed to "What KST does not measure" and expanded with a Simulated-versus-Instantiated Sapience subsection hosting the verbatim boxed definition. README "Why KST" section updated to reference the seven-sub-test battery and forward-point to the new framing subsection. README sub-test table expanded from five entries to seven.
 - THEORY "What sapience markers are, and are not" section expanded from five markers to seven; boxed 287-word verbatim definition inserted; S7 provisional-status marker added. THEORY "How a KST score is read" section expanded with CCI bands, the theatrical-sapience flag interpretation, and the v1.0-comparable composite.
 - DOCUMENTATION acquires a new §5.A ("Interpretation under the Simulated-versus-Instantiated framing") between scoring/aggregation and persistence; glossary extended with entries for Simulated Sapience, Instantiated Sapience, Correlational Coherence Index, theatrical sapience, S7 (provisional), and v1.0-comparable composite. Technical reference sections enumerate the seven sub-tests plus the SDT-MOT auxiliary and the CCI.
@@ -53,7 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Co-authorship
 
-- Kennon M. Sheldon, Ph.D. added as a second author in `CITATION.cff` and on the `docs/PROPOSED_STANDARD.md` title block, pending joint review of the v1.2 build-out.
+- Kennon M. Sheldon, Ph.D. added as a second author in `CITATION.cff` and on the `docs/PROPOSED_STANDARD.md` title block by mutual agreement during the v1.2 consultation. Sheldon's written co-authorship consent is on file as of 2026-06-05, confirming the rename and the co-authored standard.
 
 ## [1.0.0] - 2026-05-17
 

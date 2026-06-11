@@ -1,15 +1,9 @@
-# NOTE (v1.2 release-gate): The second author entry for Kennon M. Sheldon, Ph.D.
-# reflects the joint authorship Al Kari and Dr. Sheldon agreed mutually during
-# the v1.2 consultation that produced the Kari-Sheldon Test rename and the
-# jointly-designed v1.2 expansion (DDR, IC, CCI, SDT-MOT, the
-# Simulated-versus-Instantiated framing, and the provisional S7 clause). The
-# v1.2 release stays in draft on the public repository pending mutual review by
-# Al Kari and Dr. Sheldon of the v1.2 build-out of the jointly-designed
-# expansion; when that joint review is complete the operator removes this note,
-# populates affiliation and ORCID per Dr. Sheldon's direction, promotes the
-# public PR from draft to ready-for-review, and tags v1.2.0. Affiliation, ORCID,
-# and contact details for the co-author are placeholders to be populated once
-# Dr. Sheldon confirms his preferred values for the v1.2.0 release record.
+# NOTE (v1.2 release record): Kennon M. Sheldon, Ph.D. is a co-author of the
+# Kari-Sheldon Test by mutual agreement during the v1.2 consultation that
+# produced the rename and the jointly-designed v1.2 expansion (DDR, IC, CCI,
+# SDT-MOT, the Simulated-versus-Instantiated framing, and the provisional S7
+# clause). Written co-authorship consent from Dr. Sheldon is on file as of
+# 2026-06-05, and his affiliation and ORCID are recorded below.
 cff-version: 1.2.0
 title: "KST: the Kari-Sheldon Test"
 message: >-
