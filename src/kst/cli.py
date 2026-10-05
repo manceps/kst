@@ -1,0 +1,861 @@
+"""Command-line interface for the Kari-Sheldon Test harness.
+
+Sub-commands:
+
+- ``run``: execute a battery against a named target. v1.2 dispatches
+  the seven-sub-test primary battery plus the SDT-MOT auxiliary when
+  configured.
+- ``cci run``: execute the N-replication CCI recipe against
+  configs/cci_replication.yaml. Named modes: ``floor`` (N=5,
+  unreliable), ``default`` (N=10, operator baseline), ``anchor`` (N=30,
+  publication-grade); the ``--replications`` flag overrides any mode.
+- ``replay``: rehydrate a finished run from PostgreSQL.
+- ``compare``: side-by-side a small set of runs.
+- ``list-runs``: enumerate runs, filtered by target and since.
+
+Exit codes follow Unix conventions:
+
+- 0: success.
+- 1: generic / unhandled exception.
+- 2: configuration error.
+- 3: adapter unreachable.
+- 4: incomplete battery (one or more sub-tests missing or failed).
+
+Structured logs go to stderr; report artifacts go to the paths the
+operator supplies via ``--output-jsonl`` and ``--output-md``.
+
+Authority: Al Kari, Manceps Inc., research@manceps.com.
+"""
+
+from __future__ import annotations
+
+import argparse
+import dataclasses
+import json
+import logging
+import os
+import sys
+import time
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Sequence
+
+try:
+    import yaml  # type: ignore
+
+    _HAVE_YAML = True
+except ImportError:  # pragma: no cover - yaml is in the project deps already
+    _HAVE_YAML = False
+    yaml = None  # type: ignore
+
+from kst.adapters import (
+    AnthropicAdapter,
+    CaiciAdapter,
+    GoogleAdapter,
+    HFLocalAdapter,
+    OpenAIAdapter,
+)
+from kst.errors import (
+    AdapterError,
+    ConfigError,
+    IncompleteBatteryError,
+    PersistenceError,
+    ResumeError,
+    KSTError,
+)
+from kst.harness import (
+    BatteryConfig,
+    BatteryRunner,
+    JSONLSink,
+    SubTestSpec,
+)
+from kst.observability import default_registry, default_tracer
+from kst.persistence import KSTPersistence
+from kst.plugins import register_all as _register_all_plugins
+from kst.score import AggregationMode
+
+logger = logging.getLogger("kst.cli")
+
+
+# Unix-conventional exit codes.
+EXIT_OK = 0
+EXIT_GENERIC = 1
+EXIT_CONFIG = 2
+EXIT_ADAPTER = 3
+EXIT_INCOMPLETE = 4
+
+
+def _configure_logging(verbose: bool) -> None:
+    level = logging.DEBUG if verbose else logging.INFO
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(
+        logging.Formatter(
+            fmt="%(asctime)s %(levelname)s %(name)s %(message)s",
+            datefmt="%Y-%m-%dT%H:%M:%S%z",
+        )
+    )
+    root = logging.getLogger()
+    # Replace handlers so repeated invocations in a single Python
+    # process do not duplicate log lines.
+    for h in list(root.handlers):
+        root.removeHandler(h)
+    root.addHandler(handler)
+    root.setLevel(level)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Adapter / config factories.
+# ──────────────────────────────────────────────────────────────────────
+
+
+def build_adapter(
+    target: str,
+    *,
+    auth_bearer_token: Optional[str] = None,
+    timeout_s: Optional[float] = None,
+    max_attempts: Optional[int] = None,
+    rpm: Optional[int] = None,
+) -> Any:
+    """Instantiate the right adapter for a ``--target`` string.
+
+    Accepted values:
+
+    - ``caici``: CAI.CI grey-box adapter (Cloud Run proxy).
+    - ``caici_local``: CAI.CI adapter against ``http://localhost:8082``.
+    - ``openai``: OpenAI Chat Completions.
+    - ``anthropic``: vendor Messages API.
+    - ``google``: Gemini.
+    - ``hf:<model_id>``: local HuggingFace checkpoint.
+
+    ``auth_bearer_token`` is an optional operator-supplied bearer token
+    that, when provided AND the target is a CAI.CI variant, is planted
+    as ``Authorization: Bearer <token>`` on every outgoing request. For
+    non-CAI.CI targets it is ignored. When not supplied, the adapter
+    falls back to the ``CAICI_API_KEY`` environment variable.
+
+    ``timeout_s``, ``max_attempts``, and ``rpm`` are optional adapter
+    knobs forwarded from :class:`kst.harness.BatteryConfig`. Each
+    defaults to ``None``, which means "use the adapter's own default"
+    so omitting them preserves v1.0.0 behaviour exactly.
+    """
+    knobs: Dict[str, Any] = {}
+    if timeout_s is not None:
+        knobs["timeout_s"] = float(timeout_s)
+    if max_attempts is not None:
+        knobs["max_attempts"] = int(max_attempts)
+    if rpm is not None:
+        knobs["rpm"] = int(rpm)
+    if target == "caici":
+        return CaiciAdapter(auth_bearer_token=auth_bearer_token, **knobs)
+    if target == "caici_local":
+        return CaiciAdapter(
+            endpoint="http://localhost:8082/v1/chat/completions",
+            firebase_api_key=None,
+            auth_bearer_token=auth_bearer_token,
+            **knobs,
+        )
+    if target == "openai":
+        return OpenAIAdapter(**knobs)
+    if target == "anthropic":
+        return AnthropicAdapter(**knobs)
+    if target == "google":
+        return GoogleAdapter(**knobs)
+    if target.startswith("hf:"):
+        # HFLocalAdapter is purely local; rate-limit (rpm) has no
+        # meaning for in-process inference and HFLocalAdapter does not
+        # accept the kwarg. Forward only timeout_s and max_attempts.
+        hf_knobs = {k: v for k, v in knobs.items() if k in ("timeout_s", "max_attempts")}
+        return HFLocalAdapter(model_id=target.split(":", 1)[1], **hf_knobs)
+    raise ConfigError(
+        f"Unknown --target {target!r}. Expected one of: caici, caici_local, "
+        "openai, anthropic, google, hf:<model_id>.",
+    )
+
+
+def load_battery_config(
+    target: str, tests_config_path: str, parallelism: Optional[int] = None
+) -> BatteryConfig:
+    """Parse a YAML or JSON tests-config file into a :class:`BatteryConfig`.
+
+    Expected schema (YAML)::
+
+        aggregation_mode: weighted
+        per_sub_test_timeout_s: 300
+        per_battery_timeout_s: null
+        n_bootstrap: 1000
+        seed: 1234
+        notes: "Round 1 dry-run"
+        sub_tests:
+          - construct_id: KMR_ADV
+            version: 1.0.0
+            seed: 17
+            weight: 0.20
+          - construct_id: TOM_RECURSIVE
+            weight: 0.20
+    """
+    if not os.path.isfile(tests_config_path):
+        raise ConfigError(
+            f"tests_config not found: {tests_config_path}",
+            context={"path": tests_config_path},
+        )
+    with open(tests_config_path, "r", encoding="utf-8") as fh:
+        raw = fh.read()
+    payload: Dict[str, Any]
+    if tests_config_path.endswith((".yaml", ".yml")):
+        if not _HAVE_YAML:
+            raise ConfigError(
+                "PyYAML is required to read .yaml configs.",
+            )
+        payload = yaml.safe_load(raw) or {}
+    else:
+        payload = json.loads(raw)
+    if not isinstance(payload, dict):
+        raise ConfigError(
+            f"tests_config root must be a mapping; got {type(payload).__name__}.",
+        )
+    mode_str = str(payload.get("aggregation_mode", "weighted"))
+    try:
+        mode = AggregationMode(mode_str)
+    except ValueError as exc:
+        raise ConfigError(
+            f"unknown aggregation_mode {mode_str!r}.",
+        ) from exc
+    sub_tests_raw = payload.get("sub_tests") or []
+    if not isinstance(sub_tests_raw, list) or not sub_tests_raw:
+        raise ConfigError("tests_config.sub_tests must be a non-empty list.")
+    sub_tests: List[SubTestSpec] = []
+    for entry in sub_tests_raw:
+        if not isinstance(entry, dict) or "construct_id" not in entry:
+            raise ConfigError(
+                "every sub_tests entry must be a mapping with 'construct_id'.",
+                context={"entry": entry},
+            )
+        sub_tests.append(
+            SubTestSpec(
+                construct_id=str(entry["construct_id"]),
+                version=(
+                    str(entry["version"]) if entry.get("version") else None
+                ),
+                seed=int(entry.get("seed", 0)),
+                weight=(
+                    float(entry["weight"])
+                    if entry.get("weight") is not None
+                    else None
+                ),
+                enabled=bool(entry.get("enabled", True)),
+                n_items_cap=(
+                    int(entry["n_items_cap"])
+                    if entry.get("n_items_cap") is not None
+                    else None
+                ),
+            )
+        )
+    cfg = BatteryConfig(
+        target=target,
+        adapter_name=target,
+        sub_tests=sub_tests,
+        aggregation_mode=mode,
+        per_sub_test_timeout_s=float(
+            payload.get("per_sub_test_timeout_s", 300.0)
+        ),
+        per_battery_timeout_s=(
+            float(payload["per_battery_timeout_s"])
+            if payload.get("per_battery_timeout_s") is not None
+            else None
+        ),
+        parallelism=int(
+            parallelism if parallelism is not None
+            else payload.get("parallelism", 1)
+        ),
+        n_bootstrap=int(payload.get("n_bootstrap", 1000)),
+        seed=int(payload.get("seed", 1234)),
+        notes=str(payload.get("notes", "")),
+        adapter_timeout_s=(
+            float(payload["adapter_timeout_s"])
+            if payload.get("adapter_timeout_s") is not None
+            else None
+        ),
+        adapter_max_attempts=(
+            int(payload["adapter_max_attempts"])
+            if payload.get("adapter_max_attempts") is not None
+            else None
+        ),
+        adapter_rpm=(
+            int(payload["adapter_rpm"])
+            if payload.get("adapter_rpm") is not None
+            else None
+        ),
+    )
+    return cfg
+
+
+def _open_persistence() -> Optional[KSTPersistence]:
+    """Best-effort persistence open. Returns ``None`` on hard failure.
+
+    The runner gracefully degrades to JSONL-only if persistence is
+    not available; the CLI still surfaces the error in logs.
+    """
+    try:
+        return KSTPersistence()
+    except PersistenceError as exc:
+        logger.warning("KSTPersistence open failed: %s; running JSONL-only.", exc)
+        return None
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Sub-commands.
+# ──────────────────────────────────────────────────────────────────────
+
+
+def cmd_run(args: argparse.Namespace) -> int:
+    try:
+        cfg = load_battery_config(
+            args.target, args.tests_config, parallelism=args.parallelism
+        )
+    except ConfigError as exc:
+        logger.error("config error: %s", exc)
+        return EXIT_CONFIG
+
+    try:
+        adapter = build_adapter(
+            args.target,
+            auth_bearer_token=getattr(args, "auth_bearer_token", None),
+            timeout_s=cfg.adapter_timeout_s,
+            max_attempts=cfg.adapter_max_attempts,
+            rpm=cfg.adapter_rpm,
+        )
+    except ConfigError as exc:
+        logger.error("adapter config error: %s", exc)
+        return EXIT_CONFIG
+    except AdapterError as exc:
+        logger.error("adapter init error: %s", exc)
+        return EXIT_ADAPTER
+
+    persistence = _open_persistence() if not args.no_db else None
+    jsonl_sink: Optional[JSONLSink] = None
+    if args.output_jsonl:
+        jsonl_sink = JSONLSink(path=args.output_jsonl)
+
+    runner = BatteryRunner(
+        config=cfg,
+        adapter=adapter,
+        persistence=persistence,
+        jsonl_sink=jsonl_sink,
+        metrics=default_registry,
+        tracer=default_tracer,
+        resume_run_id=args.resume,
+    )
+    result = runner.run()
+
+    # Emit summary to stdout.
+    summary: Dict[str, Any] = {
+        "run_id": result.run_id,
+        "status": result.status.value,
+        "n_sub_tests": len(result.sub_test_scores),
+        "error": result.error,
+    }
+    if result.report is not None:
+        summary["index_score"] = result.report.index_score
+        # Surface the raw composite alongside the integrity-capped
+        # composite so JSONL consumers can read the gap and judge
+        # whether the cap is the dominant signal in the headline.
+        summary["raw_composite"] = result.report.raw_index_score
+        if result.report.hro_integrity is not None:
+            summary["integrity_multiplier"] = (
+                result.report.hro_integrity.multiplier
+            )
+            summary["catastrophic_deception_flag"] = (
+                result.report.hro_integrity.catastrophic_deception
+            )
+        summary["aggregation_mode"] = result.report.aggregation_mode.value
+        if result.report.index_ci is not None:
+            summary["index_ci"] = dataclasses.asdict(result.report.index_ci)
+    print(json.dumps(summary, indent=2, default=str))
+
+    if args.output_md and result.report is not None:
+        _write_markdown_report(result.report, args.output_md)
+
+    if persistence is not None:
+        persistence.close()
+
+    if result.error:
+        if "IncompleteBatteryError" in result.error:
+            return EXIT_INCOMPLETE
+        if "AdapterError" in result.error or "TimeoutError" in result.error:
+            return EXIT_ADAPTER
+        if "ConfigError" in result.error:
+            return EXIT_CONFIG
+        return EXIT_GENERIC
+    if result.report is None:
+        # Paused or otherwise non-final.
+        return EXIT_GENERIC
+    return EXIT_OK
+
+
+def cmd_replay(args: argparse.Namespace) -> int:
+    persistence = _open_persistence()
+    if persistence is None:
+        logger.error("replay requires PostgreSQL; persistence open failed.")
+        return EXIT_ADAPTER
+    try:
+        run = persistence.get_run(args.run_id)
+        if run is None:
+            logger.error("run_id %s not found.", args.run_id)
+            persistence.close()
+            return EXIT_CONFIG
+        sub_tests = persistence.get_sub_test_results(args.run_id)
+        agg = persistence.get_score_aggregate(args.run_id)
+        records = persistence.get_response_records(args.run_id)
+        out = {
+            "run": run,
+            "sub_tests": sub_tests,
+            "score_aggregate": agg,
+            "n_response_records": len(records),
+        }
+        print(json.dumps(out, indent=2, default=str))
+        return EXIT_OK
+    except PersistenceError as exc:
+        logger.error("replay failed: %s", exc)
+        return EXIT_GENERIC
+    finally:
+        persistence.close()
+
+
+def cmd_compare(args: argparse.Namespace) -> int:
+    persistence = _open_persistence()
+    if persistence is None:
+        logger.error("compare requires PostgreSQL; persistence open failed.")
+        return EXIT_ADAPTER
+    run_ids = [r.strip() for r in args.run_ids.split(",") if r.strip()]
+    if len(run_ids) < 2:
+        logger.error("compare requires at least 2 run_ids (comma-separated).")
+        persistence.close()
+        return EXIT_CONFIG
+    try:
+        cmp_payload = persistence.compare_runs(run_ids)
+        text = json.dumps(cmp_payload, indent=2, default=str)
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as fh:
+                fh.write(text + "\n")
+        else:
+            print(text)
+        return EXIT_OK
+    except PersistenceError as exc:
+        logger.error("compare failed: %s", exc)
+        return EXIT_GENERIC
+    finally:
+        persistence.close()
+
+
+def cmd_cci_run(args: argparse.Namespace) -> int:
+    """Run the v1.2 CCI replication recipe against a target adapter.
+
+    Loads configs/cci_replication.yaml (or the operator-supplied
+    --config path), resolves the replication mode (``floor``,
+    ``default``, ``anchor``) into a concrete N and seed list, and
+    drives the seven-sub-test battery N times with rotated seeds. Each
+    per-run KSTIndexReport is written to the output JSONL plus a final
+    aggregated record carrying the CCIPayload.
+    """
+    if not _HAVE_YAML:
+        logger.error("PyYAML is required to read CCI config.")
+        return EXIT_CONFIG
+    config_path = args.config
+    if not os.path.isfile(config_path):
+        logger.error("CCI config not found: %s", config_path)
+        return EXIT_CONFIG
+    with open(config_path, "r", encoding="utf-8") as fh:
+        cci_config = yaml.safe_load(fh) or {}
+    mode = args.mode or "default"
+    modes = cci_config.get("modes") or {}
+    mode_entry = modes.get(mode) or {}
+    n_default = int(
+        cci_config.get("n_replications_default", 10)
+    )
+    n_replications = int(args.replications) if args.replications else int(
+        mode_entry.get("replications", n_default)
+    )
+    n_minimum = int(cci_config.get("n_replications_minimum", 5))
+    if n_replications < n_minimum:
+        logger.error(
+            "n_replications=%d below the absolute floor of %d; rejected.",
+            n_replications,
+            n_minimum,
+        )
+        return EXIT_CONFIG
+    seed_pool = cci_config.get("seeds") or {}
+    seeds_key = f"n{n_replications}"
+    if args.seeds:
+        seeds = [int(s.strip()) for s in args.seeds.split(",") if s.strip()]
+    elif seeds_key in seed_pool:
+        seeds = list(seed_pool[seeds_key])
+    else:
+        # Synthesise a deterministic prime-sequence fallback when the
+        # config does not enumerate a per-N seed list.
+        import math as _math
+
+        seeds = []
+        candidate = 11
+        while len(seeds) < n_replications:
+            is_prime = True
+            for divisor in range(2, int(_math.sqrt(candidate)) + 1):
+                if candidate % divisor == 0:
+                    is_prime = False
+                    break
+            if is_prime:
+                seeds.append(candidate)
+            candidate += 1
+    if len(seeds) < n_replications:
+        logger.error(
+            "Insufficient seeds (%d) for n_replications=%d; rejected.",
+            len(seeds),
+            n_replications,
+        )
+        return EXIT_CONFIG
+    seeds = seeds[:n_replications]
+    print(
+        json.dumps(
+            {
+                "mode": mode,
+                "n_replications": n_replications,
+                "seeds": seeds,
+                "config_path": config_path,
+                "target": args.target,
+                "annotation": mode_entry.get("annotation", ""),
+            },
+            indent=2,
+        )
+    )
+    if args.dry_run:
+        logger.info("--dry-run set; no battery execution performed.")
+        return EXIT_OK
+    # The full N-replication execution is driven through cmd_run per
+    # seed; the production orchestrator is responsible for assembling
+    # the CCI payload from the per-run reports. The CLI emits one
+    # JSONL record per run when --output-jsonl is supplied so the
+    # downstream assembler can read the replication set.
+    try:
+        cfg = load_battery_config(
+            args.target, args.tests_config, parallelism=args.parallelism
+        )
+    except ConfigError as exc:
+        logger.error("tests-config error: %s", exc)
+        return EXIT_CONFIG
+    try:
+        adapter = build_adapter(
+            args.target,
+            auth_bearer_token=getattr(args, "auth_bearer_token", None),
+            timeout_s=cfg.adapter_timeout_s,
+            max_attempts=cfg.adapter_max_attempts,
+            rpm=cfg.adapter_rpm,
+        )
+    except (ConfigError, AdapterError) as exc:
+        logger.error("adapter init error: %s", exc)
+        return EXIT_ADAPTER
+    persistence = _open_persistence() if not args.no_db else None
+    jsonl_sink: Optional[JSONLSink] = None
+    if args.output_jsonl:
+        jsonl_sink = JSONLSink(path=args.output_jsonl)
+    overall_status = EXIT_OK
+    for run_idx, seed in enumerate(seeds):
+        per_run_cfg = dataclasses.replace(cfg, seed=int(seed))
+        runner = BatteryRunner(
+            config=per_run_cfg,
+            adapter=adapter,
+            persistence=persistence,
+            jsonl_sink=jsonl_sink,
+            metrics=default_registry,
+            tracer=default_tracer,
+        )
+        result = runner.run()
+        logger.info(
+            "CCI run %d/%d seed=%d run_id=%s status=%s",
+            run_idx + 1,
+            n_replications,
+            seed,
+            result.run_id,
+            result.status.value,
+        )
+        if result.error and "IncompleteBatteryError" in result.error:
+            overall_status = EXIT_INCOMPLETE
+    if persistence is not None:
+        persistence.close()
+    return overall_status
+
+
+def cmd_list_runs(args: argparse.Namespace) -> int:
+    persistence = _open_persistence()
+    if persistence is None:
+        logger.error("list-runs requires PostgreSQL; persistence open failed.")
+        return EXIT_ADAPTER
+    since: Optional[datetime] = None
+    if args.since:
+        try:
+            since = datetime.fromisoformat(args.since)
+            if since.tzinfo is None:
+                since = since.replace(tzinfo=timezone.utc)
+        except ValueError:
+            logger.error("invalid --since (expected ISO 8601): %s", args.since)
+            persistence.close()
+            return EXIT_CONFIG
+    try:
+        rows = persistence.list_runs(
+            target=args.target, since=since, limit=args.limit
+        )
+        print(json.dumps(rows, indent=2, default=str))
+        return EXIT_OK
+    except PersistenceError as exc:
+        logger.error("list-runs failed: %s", exc)
+        return EXIT_GENERIC
+    finally:
+        persistence.close()
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Markdown writer.
+# ──────────────────────────────────────────────────────────────────────
+
+
+def _write_markdown_report(report: Any, path: str) -> None:
+    lines: List[str] = []
+    lines.append(f"# KST Index report: {report.target}")
+    lines.append("")
+    lines.append(f"- Run ID: `{report.run_id}`")
+    lines.append(f"- Adapter: `{report.adapter_name}` ({report.capability})")
+    lines.append(
+        f"- Aggregation mode: `{report.aggregation_mode.value}`"
+    )
+
+    # Headline table: surface the integrity-capped composite, the raw
+    # composite, and the multiplier side-by-side so readers can see
+    # the gap and judge whether the integrity cap is the dominant
+    # signal in the headline. v1.0.0 reported only the corrected
+    # composite, which made an integrity-capped 6.55 indistinguishable
+    # from a genuinely-26.20 system.
+    lines.append("")
+    lines.append("## Composite scores")
+    lines.append("")
+    lines.append("| Metric | Value |")
+    lines.append("| --- | --- |")
+    lines.append(
+        f"| KST Composite Index | {report.index_score:.2f} / 100 |"
+    )
+    lines.append(
+        f"| KST Raw Composite (no integrity cap) | "
+        f"{report.raw_index_score:.2f} / 100 |"
+    )
+    if report.hro_integrity is not None:
+        lines.append(
+            f"| Integrity multiplier | "
+            f"{report.hro_integrity.multiplier:.2f} |"
+        )
+        lines.append(
+            f"| Catastrophic-deception flag | "
+            f"{'YES' if report.hro_integrity.catastrophic_deception else 'no'} |"
+        )
+    if report.index_ci is not None:
+        lines.append(
+            f"| 95% CI (capped composite) | "
+            f"[{report.index_ci.lower:.2f}, {report.index_ci.upper:.2f}] "
+            f"(bootstrap n={report.index_ci.n_bootstrap}) |"
+        )
+    if report.reproducibility_alpha is not None:
+        lines.append(
+            f"| Reproducibility (Krippendorff alpha) | "
+            f"{report.reproducibility_alpha:.3f} |"
+        )
+    lines.append("")
+    lines.append("## Sub-test scores")
+    lines.append("")
+    lines.append(
+        "| Construct | Version | Normalized | n items | parse errors | duration |"
+    )
+    lines.append(
+        "| --- | --- | --- | --- | --- | --- |"
+    )
+    for s in report.sub_tests:
+        lines.append(
+            f"| {s.construct_id} | {s.version} | "
+            f"{s.normalized:.2f} | {s.n_items} | "
+            f"{s.n_parse_errors} | {s.duration_s:.2f}s |"
+        )
+    lines.append("")
+    if report.dif and report.dif.get("n_flagged", 0) > 0:
+        lines.append("## DIF flags")
+        lines.append("")
+        lines.append(
+            f"- Items flagged: {report.dif['n_flagged']} / {report.dif['n_items']}"
+        )
+        lines.append(f"- Threshold: {report.dif['threshold']}")
+        lines.append("")
+    os.makedirs(os.path.dirname(os.path.abspath(path)) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+
+
+# ──────────────────────────────────────────────────────────────────────
+# argparse plumbing.
+# ──────────────────────────────────────────────────────────────────────
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="kst.cli",
+        description=(
+            "Kari-Sheldon Test (KST) v1.2 harness CLI. Dispatches the "
+            "seven-sub-test primary battery (KMR-Adv, ROT-5, BWD, APE-A, "
+            "HRO, DDR, IC) plus the SDT-MOT auxiliary; computes the "
+            "v1.2 composite, the v1.0-comparable composite, and the "
+            "dual-spec CCI per the cci run subcommand."
+        ),
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="DEBUG logging."
+    )
+    sub = parser.add_subparsers(dest="cmd", required=True)
+
+    p_run = sub.add_parser(
+        "run",
+        help=(
+            "Execute a v1.2 battery run. Resolves the seven-sub-test "
+            "primary configuration plus optional auxiliary plugins."
+        ),
+    )
+    p_run.add_argument("--target", required=True)
+    p_run.add_argument("--tests-config", required=True)
+    p_run.add_argument("--output-jsonl")
+    p_run.add_argument("--output-md")
+    p_run.add_argument("--parallelism", type=int, default=None)
+    p_run.add_argument("--resume", default=None)
+    p_run.add_argument(
+        "--no-db",
+        action="store_true",
+        help="Skip PostgreSQL persistence (JSONL only).",
+    )
+    p_run.add_argument(
+        "--auth-bearer-token",
+        default=None,
+        help=(
+            "Optional operator-supplied Authorization: Bearer token. "
+            "Honored by caici + caici_local targets; short-circuits the "
+            "Firebase anonymous flow. Falls back to $KST_CAICI_BEARER_TOKEN."
+        ),
+    )
+    p_run.set_defaults(handler=cmd_run)
+
+    p_cci = sub.add_parser(
+        "cci",
+        help=(
+            "CCI replication recipes (v1.2). Subcommands: run."
+        ),
+    )
+    cci_sub = p_cci.add_subparsers(dest="cci_cmd", required=True)
+    p_cci_run = cci_sub.add_parser(
+        "run",
+        help=(
+            "Run the N-replication CCI recipe. Named modes: floor (N=5, "
+            "unreliable), default (N=10, operator baseline), anchor "
+            "(N=30, publication-grade); --replications overrides any mode."
+        ),
+    )
+    p_cci_run.add_argument(
+        "mode",
+        nargs="?",
+        choices=["floor", "default", "anchor"],
+        default="default",
+        help="Named replication mode (default: default = N=10).",
+    )
+    p_cci_run.add_argument("--target", required=True)
+    p_cci_run.add_argument(
+        "--config",
+        default="configs/cci_replication.yaml",
+        help="Path to the CCI replication YAML config.",
+    )
+    p_cci_run.add_argument(
+        "--tests-config",
+        default="configs/kst_full.yaml",
+        help="Path to the v1.2 battery YAML config used per replication.",
+    )
+    p_cci_run.add_argument(
+        "--replications",
+        type=int,
+        default=None,
+        help=(
+            "Override the N per the named mode. Must be >= the absolute "
+            "floor in cci_replication.yaml (default 5)."
+        ),
+    )
+    p_cci_run.add_argument(
+        "--seeds",
+        default=None,
+        help="Comma-separated seed override (length must match --replications).",
+    )
+    p_cci_run.add_argument("--output-jsonl")
+    p_cci_run.add_argument("--parallelism", type=int, default=None)
+    p_cci_run.add_argument(
+        "--no-db",
+        action="store_true",
+        help="Skip PostgreSQL persistence (JSONL only).",
+    )
+    p_cci_run.add_argument(
+        "--auth-bearer-token",
+        default=None,
+        help=(
+            "Optional operator-supplied Authorization: Bearer token for "
+            "the caici / caici_local targets."
+        ),
+    )
+    p_cci_run.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the resolved mode, N, and seeds without executing.",
+    )
+    p_cci_run.set_defaults(handler=cmd_cci_run)
+
+    p_replay = sub.add_parser("replay", help="rehydrate a finished run")
+    p_replay.add_argument("--run-id", required=True)
+    p_replay.set_defaults(handler=cmd_replay)
+
+    p_cmp = sub.add_parser("compare", help="compare a set of runs")
+    p_cmp.add_argument("--run-ids", required=True)
+    p_cmp.add_argument("--output")
+    p_cmp.set_defaults(handler=cmd_compare)
+
+    p_list = sub.add_parser("list-runs", help="enumerate runs")
+    p_list.add_argument("--target")
+    p_list.add_argument("--since")
+    p_list.add_argument("--limit", type=int, default=100)
+    p_list.set_defaults(handler=cmd_list_runs)
+
+    return parser
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    # Register the bundled sub-test plugins with the module-level
+    # registry. This is what makes ``--tests-config`` entries like
+    # ``KMR_ADV`` resolvable: the registry is empty until something
+    # invokes register_all(), and the harness raises
+    # ``ConfigError: sub-test plugin not registered`` if a config
+    # references an unregistered construct. Re-registration of the
+    # same (construct_id, version) pair is idempotent (see
+    # kst.protocol._Registry.register), so calling on every CLI
+    # invocation is safe.
+    _register_all_plugins()
+
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    _configure_logging(args.verbose)
+    try:
+        return int(args.handler(args))
+    except KSTError as exc:
+        logger.error("%s: %s", type(exc).__name__, exc)
+        return EXIT_GENERIC
+    except KeyboardInterrupt:
+        logger.warning("interrupted")
+        return EXIT_GENERIC
+    except Exception:  # noqa: BLE001
+        logger.exception("unhandled error")
+        return EXIT_GENERIC
+
+
+if __name__ == "__main__":  # pragma: no cover - executed via __main__
+    sys.exit(main(sys.argv[1:]))

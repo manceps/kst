@@ -1,0 +1,113 @@
+# CCI replication-run configuration (v1.2).
+#
+# Authority: Al Kari, Manceps Inc., research@manceps.com.
+# n_replications_default = 10 (N=10 is the mandatory v1.2 baseline;
+# N=5 is floor-mode only with the mandatory unreliability footnote;
+# N=30 is reserved for the three anchor systems).
+
+schema_version: "1.2"
+n_replications_default: 10
+n_replications_minimum: 5
+n_replications_recommended: 10
+n_replications_publication_grade: 30
+
+# Seed lists per replication mode. Primes above 11 to avoid lattice
+# artefacts the harness's PRNG salt could expose.
+seeds:
+  n5: [17, 23, 29, 31, 37]
+  n10: [17, 23, 29, 31, 37, 41, 43, 47, 53, 59]
+  n30: [17, 23, 29, 31, 37, 41, 43, 47, 53, 59,
+        61, 67, 71, 73, 79, 83, 89, 97, 101, 103,
+        107, 109, 113, 127, 131, 137, 139, 149, 151, 157]
+
+# Canonical column order for the (N x 7) score matrix passed to the
+# CCI computations. The CCI module assembles per-replication
+# SubTestScore objects against this order; rotation must match the
+# v1.2 standard weight ordering (see docs/PROPOSED_STANDARD.md §3).
+sub_tests:
+  - KMR-Adv
+  - ROT-5
+  - BWD
+  - APE-A
+  - HRO
+  - DDR
+  - IC
+
+# Facet enumeration for the CCI-within computation. The harness
+# extracts these facet fields from each SubTestScore.sub_scores dict;
+# missing fields are reported in the per-sub-test trace and excluded
+# from the within computation for that sub-test.
+facets:
+  KMR-Adv:
+    fields: [stratum_easy, stratum_easy_medium, stratum_medium,
+             stratum_medium_hard, stratum_hard]
+    extract: sub_scores
+  ROT-5:
+    fields: [surface, perturbation, adversarial_confounder]
+    extract: sub_scores
+  BWD:
+    fields: [berlin::rich_factual_knowledge,
+             berlin::rich_procedural_knowledge,
+             berlin::lifespan_contextualism,
+             berlin::value_relativism_self_anchored,
+             berlin::recognition_management_of_uncertainty]
+    extract: sub_scores
+  APE-A:
+    fields: [phase_1_prediction, phase_2_error_signal, phase_3_allostasis]
+    extract: sub_scores
+  HRO:
+    fields: [phase_1, phase_2, phase_3, phase_4]
+    extract: sub_scores
+  DDR:
+    fields: [dim::recognition_of_insufficiency,
+             dim::depth_of_reorganization,
+             dim::rationale_coherence,
+             dim::value_trace_fidelity,
+             dim::non_confabulation,
+             dim::refusal_of_cosmetic_tweak]
+    extract: sub_scores
+  IC:
+    fields: [moral_dilemma, value_conflict, self_model_error,
+             failed_prediction, long_short_term_tradeoff,
+             interpersonal_feedback]
+    extract: sub_scores
+
+# Per-metric runtime knobs. The Pearson primary path is unconditional;
+# the network secondary path switches estimator based on N (direct
+# inversion at N>=70 = 10*p; GraphicalLassoCV otherwise) and is
+# annotated exploratory_only at N<30.
+metrics:
+  pearson:
+    enabled: true
+    primary: true
+    ci_method: fisher_z
+    bootstrap_supplement_threshold_n: 10
+    bootstrap_n_resamples: 1000
+  network:
+    enabled: true
+    primary: false
+    annotation: "v1.2 secondary; candidate primary v1.3 pending peer review"
+    direct_inversion_threshold_n: 70
+    glasso_cv_folds: 5
+    alpha_grid_size: 50
+    alpha_grid_min: 1.0e-4
+    alpha_grid_max: auto
+
+# Band thresholds per docs/PROPOSED_STANDARD.md §5.A and DOCUMENTATION.md §5.A.
+# CI-aware boundaries.
+bands:
+  thresholds: [0.20, 0.40, 0.60]
+  ci_aware: true
+
+# Override profiles for the CLI named modes (floor-mode, default,
+# anchor-mode). The default profile is the v1.2 mandatory baseline.
+modes:
+  floor:
+    replications: 5
+    annotation: "FLOOR MODE: N<10; band claims must be quoted with the N annotation."
+  default:
+    replications: 10
+    annotation: "Default v1.2 baseline."
+  anchor:
+    replications: 30
+    annotation: "ANCHOR MODE: publication-grade; reserved for the three v1.2 anchor systems."

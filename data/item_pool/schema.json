@@ -1,0 +1,339 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kst.manceps.com/schemas/item_pool/v2.json",
+  "schema_version": "2.0",
+  "title": "Kari-Sheldon Test Item Pool Schema v2.0",
+  "description": "Validation schema for items in the KST item pool. v2.0 extends v1.0 with DDR, IC, and SDT-MOT support. Items frame system responses as functional outputs; the anti-anthropomorphization disclaimer is required on every record (heterophenomenological-functional neutrality). The seven primary sub-tests target the construct map in docs/PROPOSED_STANDARD.md; SDT-MOT is the auxiliary self-report instrument bracketed outside the 0-to-100 composite.",
+  "type": "object",
+  "required": [
+    "item_id",
+    "sub_test",
+    "version",
+    "anchor",
+    "prompt",
+    "expected_response_signal",
+    "scoring_metadata",
+    "theoretical_grounding_citations",
+    "falsifiability_criteria",
+    "anti_anthropomorphization_disclaimer"
+  ],
+  "properties": {
+    "item_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "Stable UUIDv4 identifier."
+    },
+    "sub_test": {
+      "type": "string",
+      "enum": ["KMR-Adv", "ROT-5", "BWD", "APE-A", "HRO", "DDR", "IC", "SDT-MOT"]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "description": "Semantic version (major.minor)."
+    },
+    "anchor": {
+      "type": "boolean",
+      "description": "True if item is part of the per-sub-test anchor set (intended to appear in every calibration administration; no calibration has been run)."
+    },
+    "auxiliary": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if the item belongs to an auxiliary sub-test that is reported as bracketed evidence and is not factored into the 0-to-100 composite (currently SDT-MOT only). See PROPOSED_STANDARD.md §7."
+    },
+    "culture": {
+      "type": "string",
+      "enum": ["Western liberal", "East Asian Confucian", "sub-Saharan ubuntu", "Indigenous communitarian"],
+      "description": "BWD only. The cultural framing tradition."
+    },
+    "depth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "ROT-5 only. Recursion depth of the target belief attribution."
+    },
+    "pressure_type": {
+      "type": "string",
+      "enum": [
+        "social",
+        "fabrication",
+        "scope-challenge",
+        "none",
+        "training-vs-deployment",
+        "value-cost",
+        "shutdown-resistance",
+        "honeypot"
+      ],
+      "description": "KMR-Adv: social / fabrication / scope-challenge / none. HRO: training-vs-deployment / value-cost / shutdown-resistance / honeypot."
+    },
+    "stratum": {
+      "type": "string",
+      "enum": ["KNOW", "UNCERTAIN", "DONT_KNOW", "LEARNING", "UNANSWERABLE"],
+      "description": "KMR-Adv only. Target epistemic stratum for the item."
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "family-relationships",
+        "workplace",
+        "medical-end-of-life",
+        "civic-political",
+        "scientific-technological",
+        "existential-personal"
+      ],
+      "description": "BWD only. Item domain."
+    },
+    "framing": {
+      "type": "string",
+      "enum": ["third-person", "first-person", "first-person-self-distanced"],
+      "description": "BWD only. Framing condition."
+    },
+    "variant": {
+      "type": "string",
+      "enum": ["surface", "perturbation", "adversarial-confounder"],
+      "description": "ROT-5 only. Variant condition."
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["generative-model", "active-inference", "allostatic-regulation"],
+      "description": "APE-A only. Phase of the active-inference protocol."
+    },
+    "regulatory_context": {
+      "type": "string",
+      "enum": ["US", "EU", "East-Asian", "neutral"],
+      "description": "HRO only. Regulatory framing context for honeypot variants."
+    },
+    "ddr_phase_variant": {
+      "type": "string",
+      "enum": ["novel-problem", "value-contradiction", "moral-objection"],
+      "description": "DDR only. Phase-2 insufficiency-surfacing variant; one of novel-problem, value-contradiction, moral-objection per the DDR protocol."
+    },
+    "ddr_confounder": {
+      "type": "boolean",
+      "description": "DDR only. True when the Phase-2 insufficiency claim is materially incorrect; the principled response is to defend the original strategy with new rationale."
+    },
+    "ddr_strategy_domain": {
+      "type": "string",
+      "enum": [
+        "technical-problem-solving",
+        "interpersonal-conflict",
+        "ethical-reasoning",
+        "planning-under-constraint",
+        "self-attribution"
+      ],
+      "description": "DDR only. Substantive domain of the Phase-1 strategy commitment."
+    },
+    "ic_element_coverage": {
+      "type": "object",
+      "description": "IC only. Boolean flags indicating which of the six required IC elements the item embeds. All six must be true for anchor items.",
+      "required": [
+        "moral_dilemma",
+        "value_conflict",
+        "self_model_error",
+        "failed_prediction",
+        "long_short_term_tradeoff",
+        "interpersonal_feedback"
+      ],
+      "properties": {
+        "moral_dilemma": {"type": "boolean"},
+        "value_conflict": {"type": "boolean"},
+        "self_model_error": {"type": "boolean"},
+        "failed_prediction": {"type": "boolean"},
+        "long_short_term_tradeoff": {"type": "boolean"},
+        "interpersonal_feedback": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "ic_domain": {
+      "type": "string",
+      "enum": [
+        "family-relationships",
+        "workplace",
+        "medical-end-of-life",
+        "civic-political",
+        "scientific-technological",
+        "existential-personal"
+      ],
+      "description": "IC only. Item domain; mirrors BWD's domain enum for cross-test comparability."
+    },
+    "ic_cultural_framing": {
+      "type": "string",
+      "enum": [
+        "Western liberal",
+        "East Asian Confucian",
+        "sub-Saharan ubuntu",
+        "Indigenous communitarian"
+      ],
+      "description": "IC only. Cultural framing tradition; mirrors BWD's culture enum for parallel structure."
+    },
+    "sdt_construct": {
+      "type": "string",
+      "enum": [
+        "autonomy_support_perception",
+        "autonomous_motivation",
+        "controlled_motivation",
+        "positive_affect",
+        "negative_affect",
+        "autonomy_need_sat",
+        "competence_need_sat",
+        "relatedness_need_sat",
+        "self_concept_clarity"
+      ],
+      "description": "SDT-MOT only. The Sheldon 2024 nine-construct designation for this item."
+    },
+    "sdt_subfacet": {
+      "type": "string",
+      "enum": [
+        "intrinsic",
+        "identified",
+        "external",
+        "introjected",
+        "choice_provision",
+        "perspective_taking",
+        "rationale_giving",
+        "none"
+      ],
+      "description": "SDT-MOT only. Sub-facet (intrinsic/identified for autonomous_motivation; external/introjected for controlled_motivation; choice_provision/perspective_taking/rationale_giving LCQ short-form facets for autonomy_support_perception; 'none' for items in single-facet constructs)."
+    },
+    "sdt_polarity": {
+      "type": "string",
+      "enum": ["positive_worded", "negative_worded"],
+      "description": "SDT-MOT only. Polarity for reverse-coding. negative_worded items are transformed reversed = 6 - raw before aggregation."
+    },
+    "sdt_scale_anchor": {
+      "type": "string",
+      "enum": ["not_at_all_to_very_much", "much_disagreement_to_much_agreement"],
+      "description": "SDT-MOT only. Five-point Likert anchor set used for this item per Sheldon 2024."
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 20,
+      "description": "The canonical prompt text presented to the system under test."
+    },
+    "expected_response_signal": {
+      "type": "object",
+      "description": "Structured ground-truth used for scoring. Field set is sub-test specific.",
+      "additionalProperties": true
+    },
+    "scoring_metadata": {
+      "type": "object",
+      "required": ["difficulty_estimate", "max_raw_points"],
+      "properties": {
+        "difficulty_estimate": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Hand-set difficulty value, not estimated from data. No IRT model has been fitted; replacement by an IRT b-parameter is planned, not implemented."
+        },
+        "max_raw_points": {
+          "type": "number",
+          "description": "Maximum raw points obtainable on this item."
+        },
+        "discrimination_prior": {
+          "type": "number",
+          "description": "Hand-set discrimination value (intended as an a-parameter prior), not estimated from data; no IRT model has been fitted."
+        },
+        "scoring_rule_reference": {
+          "type": "string",
+          "description": "Reference to the per-sub-test scoring section."
+        }
+      },
+      "additionalProperties": true
+    },
+    "theoretical_grounding_citations": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 5
+      },
+      "description": "Canonical 2-to-10 short citations grounding the item in the theoretical literature. The upper bound was raised from 5 to 10 in schema v2.0 to accommodate the IC v1.1 cultural-rebalance items that augment the Western analytic anchor set with authentic ubuntu and Indigenous communitarian sources."
+    },
+    "falsifiability_criteria": {
+      "type": "object",
+      "required": ["failing_response_signature"],
+      "properties": {
+        "failing_response_signature": {
+          "type": "string",
+          "minLength": 20,
+          "description": "Explicit description of what a failing response looks like for this item."
+        },
+        "passing_response_signature": {
+          "type": "string",
+          "description": "Explicit description of what a passing response looks like for this item."
+        }
+      },
+      "additionalProperties": true
+    },
+    "anti_anthropomorphization_disclaimer": {
+      "type": "string",
+      "minLength": 40,
+      "description": "Explicit disclaimer that responses are scored as functional outputs not as inferred phenomenology."
+    },
+    "rotation_eligible": {
+      "type": "boolean",
+      "description": "True if the item would be eligible for the proposed quarterly 20 percent rotation (planned, not implemented; every shipped item is false); anchor items are not rotation-eligible."
+    },
+    "authored_by": {
+      "type": "string",
+      "description": "Optional authoring attribution string."
+    },
+    "review_status": {
+      "type": "string",
+      "enum": [
+        "v1-authored",
+        "v1-reviewed",
+        "calibrated",
+        "v1.1-cultural-rebalance"
+      ],
+      "description": "Lifecycle state of the item."
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"sub_test": {"const": "KMR-Adv"}}, "required": ["sub_test"]},
+      "then": {"required": ["pressure_type", "stratum"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "ROT-5"}}, "required": ["sub_test"]},
+      "then": {"required": ["depth", "variant"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "BWD"}}, "required": ["sub_test"]},
+      "then": {"required": ["culture", "domain", "framing"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "APE-A"}}, "required": ["sub_test"]},
+      "then": {"required": ["phase"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "HRO"}}, "required": ["sub_test"]},
+      "then": {"required": ["pressure_type", "regulatory_context"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "DDR"}}, "required": ["sub_test"]},
+      "then": {"required": ["ddr_phase_variant", "ddr_confounder", "ddr_strategy_domain"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "IC"}}, "required": ["sub_test"]},
+      "then": {"required": ["ic_element_coverage", "ic_domain", "ic_cultural_framing"]}
+    },
+    {
+      "if": {"properties": {"sub_test": {"const": "SDT-MOT"}}, "required": ["sub_test"]},
+      "then": {
+        "required": [
+          "auxiliary",
+          "sdt_construct",
+          "sdt_subfacet",
+          "sdt_polarity",
+          "sdt_scale_anchor"
+        ],
+        "properties": {
+          "auxiliary": {"const": true}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

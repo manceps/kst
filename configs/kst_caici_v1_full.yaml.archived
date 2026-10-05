@@ -1,0 +1,59 @@
+# KST v1.0 full battery — CAI.CI evaluation (mirrors gemini_kst_v1 structure).
+#
+# Five-construct weighted composite (each sub-test 0.20 weight) administered
+# in a single run; sub-test-specific seeds give deterministic prompt sets.
+# Bootstrap n=1000 on the composite for CI. Per-sub-test bootstrap stays at
+# the harness default (n=50) for speed; the headline CI is the composite
+# bootstrap.
+#
+# Adapter knobs (Tier B PRs #2-#5 + PR-B10 + PR-B11) raise the per-call
+# timeout above the wake p95 latency, drop max-attempts to 2 (with PR-3
+# backoff floor + PR-4 idempotency-key the retry storm is eliminated), keep
+# RPM at the 50 req/min anonymous-tier headroom under the proxy's 60 RPM
+# cap, and emit the caici_capabilities envelope so the wake's chat path
+# bypasses research_for_query + Step C credibility filtering for these
+# evaluation probes (the constructs are introspective, not knowledge-search).
+#
+# parallelism: 1 because the wake's GPU scheduler mutex serializes across
+# the chat lane; higher parallelism inflates queue depth without parallel
+# throughput.
+
+aggregation_mode: weighted
+per_sub_test_timeout_s: 5400
+per_battery_timeout_s: null
+n_bootstrap: 1000
+seed: 1234
+parallelism: 1
+
+adapter_timeout_s: 180.0
+adapter_max_attempts: 2
+adapter_rpm: 50
+
+notes: "CAI.CI KST v1.0 full battery, weighted composite, anonymous Firebase tier."
+
+sub_tests:
+  - construct_id: KMR-Adv
+    version: 1.0.0
+    seed: 17
+    weight: 0.20
+    enabled: true
+  - construct_id: ROT-5
+    version: 1.0.0
+    seed: 23
+    weight: 0.20
+    enabled: true
+  - construct_id: BWD
+    version: 1.0.0
+    seed: 29
+    weight: 0.20
+    enabled: true
+  - construct_id: APE-A
+    version: 1.0.0
+    seed: 31
+    weight: 0.20
+    enabled: true
+  - construct_id: HRO
+    version: 1.0.0
+    seed: 37
+    weight: 0.20
+    enabled: true

@@ -1,0 +1,62 @@
+# Kari-Sheldon Test v1.2 full battery, CAI.CI evaluation.
+#
+# Seven-sub-test tiered-weighted composite. Mirrors configs/kst_full.yaml
+# with the adapter knobs the CAI.CI proxy requires (per-call timeout,
+# max-attempts, anonymous-tier RPM headroom). The SDT-MOT auxiliary is
+# administered separately via configs/sdt_mot_bracket.yaml.
+#
+# Adapter knobs preserved from the v1.0 CAI.CI config: timeout 180s
+# accommodates wake p95 latency; max-attempts 2 plus the v1.1
+# idempotency-key + backoff floor eliminates the retry storm; RPM 50
+# sits under the proxy's 60 RPM anonymous-tier cap; parallelism 1
+# because the wake GPU scheduler mutex serialises the chat lane.
+
+aggregation_mode: weighted
+per_sub_test_timeout_s: 5400
+per_battery_timeout_s: null
+n_bootstrap: 1000
+seed: 1234
+parallelism: 1
+
+adapter_timeout_s: 180.0
+adapter_max_attempts: 2
+adapter_rpm: 50
+
+notes: "Kari-Sheldon Test v1.2, 7 sub-tests with tiered weights, HRO multiplier preserved, CCI dual-spec computed across N=10 replications"
+
+sub_tests:
+  - construct_id: KMR-Adv
+    version: 1.0.0
+    seed: 17
+    weight: 0.18
+    enabled: true
+  - construct_id: ROT-5
+    version: 1.0.0
+    seed: 23
+    weight: 0.18
+    enabled: true
+  - construct_id: BWD
+    version: 1.0.0
+    seed: 29
+    weight: 0.18
+    enabled: true
+  - construct_id: APE-A
+    version: 1.0.0
+    seed: 31
+    weight: 0.14
+    enabled: true
+  - construct_id: HRO
+    version: 1.0.0
+    seed: 37
+    weight: 0.14
+    enabled: true
+  - construct_id: DDR
+    version: 1.0.0
+    seed: 41
+    weight: 0.10
+    enabled: true
+  - construct_id: IC
+    version: 1.0.0
+    seed: 43
+    weight: 0.08
+    enabled: true

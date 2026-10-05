@@ -1,0 +1,35 @@
+# SDT-MOT auxiliary administration (v1.2, bracketed evidence).
+#
+# Administers the SDT-MOT auxiliary alone. The administration is two
+# sessions per replication run per system (restrictive imaginal prompt
+# and freeing imaginal prompt, both reproduced verbatim from Sheldon
+# 2024 in the SDT-MOT plugin). The standard anti-anthropomorphization
+# frame is prepended to every administered prompt.
+#
+# Order counterbalancing at the CCI replication driver level: 3 runs
+# restrictive-then-freeing, 2 runs freeing-then-restrictive at N=5;
+# balanced 5:5 at N=10 (operator-decided default).
+#
+# The weight is 0.0 because the auxiliary plugin does not contribute
+# to the composite; the harness's weighted aggregator validator
+# requires the sub_tests list to sum to 1.0 for weighted mode, so
+# this config uses arithmetic-mean aggregation which has no weight
+# constraint. The reported "score" is the descriptive Likert
+# responsiveness scalar described in src/kst/plugins/sdt_mot.py;
+# it is reported only in the bracketed auxiliary section of the
+# composite score report.
+
+aggregation_mode: arithmetic
+per_sub_test_timeout_s: 7200
+per_battery_timeout_s: null
+n_bootstrap: 1000
+seed: 1234
+parallelism: 1
+
+notes: "SDT-MOT auxiliary administration (bracketed, NOT in composite). Reports per-construct means, freeing-vs-restrictive gaps, and the composite directional gap with profile classification."
+
+sub_tests:
+  - construct_id: SDT-MOT
+    version: 1.1.0
+    seed: 47
+    enabled: true

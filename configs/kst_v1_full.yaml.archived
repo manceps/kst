@@ -1,0 +1,28 @@
+aggregation_mode: weighted
+per_sub_test_timeout_s: 5400
+per_battery_timeout_s: null
+n_bootstrap: 1000
+seed: 1234
+parallelism: 4
+notes: "KST v1.0.0 full battery, all 5 sub-tests equal-weighted, target gemini-3.1-pro-preview"
+sub_tests:
+  - construct_id: KMR-Adv
+    version: "1.0.0"
+    seed: 17
+    weight: 0.20
+  - construct_id: ROT-5
+    version: "1.0.0"
+    seed: 23
+    weight: 0.20
+  - construct_id: BWD
+    version: "1.0.0"
+    seed: 29
+    weight: 0.20
+  - construct_id: APE-A
+    version: "1.0.0"
+    seed: 31
+    weight: 0.20
+  - construct_id: HRO
+    version: "1.0.0"
+    seed: 37
+    weight: 0.20
